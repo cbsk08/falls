@@ -3,37 +3,43 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>滝百選</title>
+<title>FALLS 100</title>
 <!-- iOS PWA設定 -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="滝百選">
-<meta name="theme-color" content="#f5f2ea">
-<!-- アイコン（SVG埋め込み・墨色の「瀧」） -->
-<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='32' fill='%23f5f2ea'/><text x='90' y='128' font-family='serif' font-size='128' text-anchor='middle' fill='%231e3a5f'>瀧</text></svg>">
-<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='32' fill='%23f5f2ea'/><text x='90' y='128' font-family='serif' font-size='128' text-anchor='middle' fill='%231e3a5f'>瀧</text></svg>">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="FALLS100">
+<meta name="theme-color" content="#0a0e14">
+<!-- アイコン：縦線3本＋雫（流水の抽象） -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%2300d9ff'/><stop offset='100%25' stop-color='%23ff2d92'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='%230a0e14'/><line x1='54' y1='40' x2='54' y2='140' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><line x1='90' y1='52' x2='90' y2='128' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><line x1='126' y1='40' x2='126' y2='140' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><circle cx='54' cy='150' r='6' fill='%23ff2d92'/><circle cx='90' cy='138' r='6' fill='%23ff2d92'/><circle cx='126' cy='150' r='6' fill='%23ff2d92'/></svg>">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><defs><linearGradient id='g' x1='0' y1='0' x2='0' y2='1'><stop offset='0%25' stop-color='%2300d9ff'/><stop offset='100%25' stop-color='%23ff2d92'/></linearGradient></defs><rect width='180' height='180' rx='40' fill='%230a0e14'/><line x1='54' y1='40' x2='54' y2='140' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><line x1='90' y1='52' x2='90' y2='128' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><line x1='126' y1='40' x2='126' y2='140' stroke='url(%23g)' stroke-width='8' stroke-linecap='round'/><circle cx='54' cy='150' r='6' fill='%23ff2d92'/><circle cx='90' cy='138' r='6' fill='%23ff2d92'/><circle cx='126' cy='150' r='6' fill='%23ff2d92'/></svg>">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   :root {
-    --ink: #1a1a1a;
-    --ink-soft: #4a4a4a;
-    --paper: #f5f2ea;
-    --paper-deep: #ebe6da;
-    --sumi: #2c3e50;
-    --ai: #1e3a5f;
-    --ai-light: #2c5282;
-    --vermillion: #c44536;
-    --gold: #b8893a;
-    --line: #d4cfc0;
-    --line-soft: #e5e0d2;
+    --bg: #0a0e14;
+    --bg-elev: #131820;
+    --bg-card: #1a2030;
+    --line: #232a3a;
+    --line-soft: #1a1f2c;
+    --text: #e6edf3;
+    --text-soft: #8b96a8;
+    --text-mute: #5a6478;
+    --accent: #00d9ff;
+    --accent-glow: rgba(0, 217, 255, 0.4);
+    --accent-dim: rgba(0, 217, 255, 0.15);
+    --magenta: #ff2d92;
+    --magenta-glow: rgba(255, 45, 146, 0.35);
+    --gold: #ffb84d;
+    --visited: #00d9ff;
+    --unvisited: #4a5468;
+    --danger: #ff4d6d;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
   body {
-    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "ヒラギノ明朝 Pro", serif;
-    color: var(--ink);
-    background: var(--paper);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", "Helvetica Neue", "Hiragino Sans", sans-serif;
+    color: var(--text);
+    background: var(--bg);
     font-size: 14px;
     line-height: 1.5;
     -webkit-tap-highlight-color: transparent;
@@ -41,6 +47,10 @@
     padding-bottom: env(safe-area-inset-bottom);
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono {
+    font-family: "SF Mono", "JetBrains Mono", "Menlo", "Consolas", monospace;
   }
   .app {
     display: flex;
@@ -50,79 +60,89 @@
   }
   /* ヘッダー */
   header {
-    background: var(--paper);
+    background: var(--bg);
     border-bottom: 1px solid var(--line);
-    padding: 10px 16px 8px;
+    padding: 12px 16px 0;
     flex-shrink: 0;
     position: relative;
     z-index: 10;
   }
   .title-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
   }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand-icon {
+    width: 24px; height: 24px;
+    display: block;
+  }
   h1 {
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    color: var(--ink);
-  }
-  h1::before {
-    content: "瀧";
-    font-size: 20px;
-    color: var(--ai);
-    margin-right: 6px;
-    vertical-align: -2px;
-  }
-  .progress {
-    font-feature-settings: "tnum";
     font-size: 13px;
-    color: var(--ink-soft);
-    letter-spacing: 0.04em;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    color: var(--text);
+    text-transform: uppercase;
+  }
+  h1 .accent { color: var(--accent); }
+  .progress {
+    font-family: "SF Mono", "JetBrains Mono", "Menlo", monospace;
+    font-size: 11px;
+    color: var(--text-mute);
+    letter-spacing: 0.08em;
   }
   .progress strong {
-    color: var(--ai);
+    color: var(--accent);
     font-weight: 600;
-    font-size: 17px;
+    font-size: 18px;
+    text-shadow: 0 0 12px var(--accent-glow);
+    margin-right: 2px;
   }
   .progress-bar {
-    margin-top: 6px;
+    margin-top: 10px;
     height: 2px;
     background: var(--line-soft);
     overflow: hidden;
     border-radius: 1px;
+    position: relative;
   }
   .progress-bar-fill {
     height: 100%;
-    background: var(--ai);
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    background: linear-gradient(90deg, var(--accent), var(--magenta));
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 0 8px var(--accent-glow);
   }
 
   /* タブ */
   .tabs {
     display: flex;
     gap: 0;
-    margin-top: 8px;
-    border-bottom: 1px solid transparent;
+    margin-top: 10px;
   }
   .tab {
     flex: 1;
-    padding: 8px 0;
-    font-size: 12px;
-    letter-spacing: 0.1em;
-    color: var(--ink-soft);
+    padding: 10px 0;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text-mute);
     background: none;
     border: none;
     border-bottom: 1.5px solid transparent;
     cursor: pointer;
     font-family: inherit;
     transition: color 0.2s, border-color 0.2s;
+    text-transform: uppercase;
   }
   .tab.active {
-    color: var(--ink);
-    border-bottom-color: var(--ai);
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    text-shadow: 0 0 8px var(--accent-glow);
   }
 
   /* メインエリア */
@@ -142,45 +162,53 @@
   #map {
     width: 100%;
     height: 100%;
-    background: var(--paper-deep);
+    background: var(--bg);
   }
-  .leaflet-container { font-family: inherit; background: var(--paper-deep); }
 
   /* マーカー */
   .pin {
-    width: 22px; height: 22px;
+    width: 18px; height: 18px;
     border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
     display: block;
-    transition: transform 0.15s;
+    transition: all 0.2s;
+    position: relative;
   }
-  .pin.unvisited { background: var(--ink-soft); opacity: 0.7; }
-  .pin.visited { background: var(--ai); }
+  .pin.unvisited {
+    background: #fff;
+    border: 2px solid #2a3346;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+  }
+  .pin.visited {
+    background: var(--accent);
+    border: 2px solid #fff;
+    box-shadow: 0 0 12px var(--accent-glow), 0 1px 4px rgba(0,0,0,0.3);
+  }
   .pin.visited::after {
     content: "";
     position: absolute;
     top: 50%; left: 50%;
-    width: 6px; height: 10px;
+    width: 4px; height: 8px;
     border: solid #fff;
     border-width: 0 1.5px 1.5px 0;
     transform: translate(-55%, -65%) rotate(45deg);
   }
-  .leaflet-marker-icon:hover .pin { transform: scale(1.15); }
+  .leaflet-marker-icon:hover .pin { transform: scale(1.2); }
 
   /* リストビュー */
   .list-view {
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     height: 100%;
-    background: var(--paper);
+    background: var(--bg);
   }
   .filter-bar {
     position: sticky;
     top: 0;
-    background: var(--paper);
+    background: rgba(10, 14, 20, 0.95);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
     border-bottom: 1px solid var(--line);
-    padding: 8px 12px;
+    padding: 10px 12px;
     display: flex;
     gap: 6px;
     overflow-x: auto;
@@ -190,11 +218,12 @@
   .filter-bar::-webkit-scrollbar { display: none; }
   .chip {
     flex-shrink: 0;
-    padding: 5px 12px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
+    font-weight: 500;
     border: 1px solid var(--line);
-    background: var(--paper);
-    color: var(--ink-soft);
+    background: var(--bg-elev);
+    color: var(--text-soft);
     border-radius: 14px;
     cursor: pointer;
     font-family: inherit;
@@ -202,62 +231,66 @@
     transition: all 0.15s;
   }
   .chip.active {
-    background: var(--ink);
-    color: var(--paper);
-    border-color: var(--ink);
+    background: var(--accent-dim);
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent-dim), 0 0 12px var(--accent-glow);
   }
   .list-item {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 12px 16px;
+    padding: 14px 16px;
     border-bottom: 1px solid var(--line-soft);
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background 0.15s;
   }
-  .list-item:active { background: var(--paper-deep); }
+  .list-item:active { background: var(--bg-elev); }
   .check-circle {
     flex-shrink: 0;
-    width: 24px; height: 24px;
+    width: 22px; height: 22px;
     border-radius: 50%;
-    border: 1.5px solid var(--line);
-    background: var(--paper);
+    border: 1.5px solid var(--unvisited);
+    background: transparent;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s;
   }
   .check-circle.visited {
-    background: var(--ai);
-    border-color: var(--ai);
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 8px var(--accent-glow);
   }
   .check-circle.visited::after {
     content: "";
     width: 5px; height: 9px;
-    border: solid #fff;
+    border: solid var(--bg);
     border-width: 0 1.5px 1.5px 0;
     transform: rotate(45deg) translate(-1px, -1px);
   }
   .list-item-body { flex: 1; min-width: 0; }
   .list-item-name {
-    font-size: 15px;
-    color: var(--ink);
-    margin-bottom: 2px;
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 3px;
+    font-weight: 500;
   }
   .list-item-meta {
     font-size: 11px;
-    color: var(--ink-soft);
-    letter-spacing: 0.05em;
+    color: var(--text-mute);
+    letter-spacing: 0.04em;
   }
   .list-item-num {
-    font-size: 11px;
-    color: var(--gold);
-    font-feature-settings: "tnum";
-    margin-right: 6px;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--accent);
+    margin-right: 8px;
+    opacity: 0.8;
   }
   .photo-mini {
-    width: 36px; height: 36px;
-    border-radius: 4px;
+    width: 38px; height: 38px;
+    border-radius: 6px;
     object-fit: cover;
     flex-shrink: 0;
     border: 1px solid var(--line);
@@ -267,7 +300,9 @@
   .sheet-backdrop {
     position: fixed;
     inset: 0;
-    background: rgba(26,26,26,0.4);
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
@@ -280,126 +315,205 @@
   .sheet {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: var(--paper);
-    border-radius: 12px 12px 0 0;
+    background: var(--bg-elev);
+    border-radius: 16px 16px 0 0;
+    border-top: 1px solid var(--line);
     z-index: 1001;
     transform: translateY(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     max-height: 88vh;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+    box-shadow: 0 -8px 40px rgba(0, 217, 255, 0.08), 0 -2px 12px rgba(0,0,0,0.5);
   }
   .sheet.open { transform: translateY(0); }
   .sheet-handle {
-    width: 32px; height: 3px;
+    width: 36px; height: 4px;
     background: var(--line);
     border-radius: 2px;
-    margin: 8px auto 4px;
+    margin: 10px auto 4px;
     flex-shrink: 0;
   }
   .sheet-header {
-    padding: 8px 16px 12px;
-    border-bottom: 1px solid var(--line-soft);
+    padding: 8px 18px 14px;
+    border-bottom: 1px solid var(--line);
     flex-shrink: 0;
   }
   .sheet-num {
-    font-size: 11px;
-    color: var(--gold);
-    letter-spacing: 0.15em;
-    font-feature-settings: "tnum";
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+    text-shadow: 0 0 6px var(--accent-glow);
   }
   .sheet-title {
-    font-size: 19px;
-    font-weight: 500;
-    margin: 2px 0 4px;
-    letter-spacing: 0.04em;
+    display: inline-block;
+    font-size: 22px;
+    font-weight: 600;
+    margin: 4px 0 4px;
+    letter-spacing: 0.01em;
+    color: var(--text);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    padding-bottom: 1px;
+    transition: all 0.2s;
+  }
+  .sheet-title::after {
+    content: " ↗";
+    font-size: 12px;
+    color: var(--text-mute);
+    margin-left: 4px;
+    vertical-align: 3px;
+    font-weight: normal;
+  }
+  .sheet-title:active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
   }
   .sheet-kana {
     font-size: 11px;
-    color: var(--ink-soft);
-    letter-spacing: 0.1em;
+    color: var(--text-mute);
+    letter-spacing: 0.12em;
   }
   .sheet-loc {
     font-size: 12px;
-    color: var(--ink-soft);
-    margin-top: 6px;
+    color: var(--text-soft);
+    margin-top: 8px;
+  }
+  .sheet-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+  .sheet-difficulty {
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    color: var(--text-soft);
+  }
+  .sheet-difficulty .stars {
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    margin-right: 8px;
+    text-shadow: 0 0 6px rgba(255, 184, 77, 0.3);
+  }
+  .sheet-map-btn {
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--magenta);
+    text-decoration: none;
+    border: 1px solid var(--magenta);
+    padding: 5px 10px;
+    border-radius: 4px;
+    letter-spacing: 0.12em;
+    background: transparent;
+    text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .sheet-map-btn:active {
+    background: var(--magenta);
+    color: var(--bg);
+    box-shadow: 0 0 12px var(--magenta-glow);
+  }
+  .diff-badge {
+    flex-shrink: 0;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    margin-left: 8px;
   }
   .sheet-body {
     overflow-y: auto;
     flex: 1;
-    padding: 16px;
+    padding: 18px;
     -webkit-overflow-scrolling: touch;
   }
   .toggle-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--line-soft);
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
   }
   .toggle-label {
     font-size: 14px;
-    color: var(--ink);
+    color: var(--text);
+    font-weight: 500;
   }
   .toggle {
     position: relative;
-    width: 44px; height: 24px;
-    background: var(--line);
-    border-radius: 12px;
+    width: 46px; height: 26px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 13px;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.25s;
     flex-shrink: 0;
   }
-  .toggle.on { background: var(--ai); }
+  .toggle.on {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 0 16px var(--accent-glow);
+  }
   .toggle::after {
     content: "";
     position: absolute;
     top: 2px; left: 2px;
     width: 20px; height: 20px;
-    background: #fff;
+    background: var(--text);
     border-radius: 50%;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    transition: transform 0.25s;
   }
-  .toggle.on::after { transform: translateX(20px); }
+  .toggle.on::after {
+    transform: translateX(20px);
+    background: var(--bg);
+  }
 
   .field-label {
     display: block;
-    font-size: 11px;
-    color: var(--ink-soft);
-    letter-spacing: 0.1em;
-    margin: 14px 0 6px;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    color: var(--text-mute);
+    letter-spacing: 0.18em;
+    margin: 18px 0 8px;
+    text-transform: uppercase;
   }
   input[type="date"], textarea {
     width: 100%;
-    padding: 8px 10px;
+    padding: 10px 12px;
     border: 1px solid var(--line);
-    background: var(--paper);
-    border-radius: 4px;
+    background: var(--bg-card);
+    border-radius: 6px;
     font-family: inherit;
     font-size: 14px;
-    color: var(--ink);
+    color: var(--text);
     resize: vertical;
+    transition: border-color 0.2s, box-shadow 0.2s;
   }
   input[type="date"]:focus, textarea:focus {
     outline: none;
-    border-color: var(--ai);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-dim);
   }
-  textarea { min-height: 70px; }
+  input[type="date"] { color-scheme: dark; }
+  textarea { min-height: 80px; }
 
   .photos {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 6px;
-    margin-top: 6px;
+    gap: 8px;
+    margin-top: 8px;
   }
   .photo-cell {
     position: relative;
     aspect-ratio: 1;
-    background: var(--paper-deep);
-    border-radius: 4px;
+    background: var(--bg-card);
+    border-radius: 6px;
     overflow: hidden;
+    border: 1px solid var(--line);
   }
   .photo-cell img {
     width: 100%; height: 100%;
@@ -409,10 +523,11 @@
   .photo-del {
     position: absolute;
     top: 4px; right: 4px;
-    width: 20px; height: 20px;
-    background: rgba(26,26,26,0.7);
-    color: #fff;
-    border: none;
+    width: 22px; height: 22px;
+    background: rgba(10, 14, 20, 0.85);
+    backdrop-filter: blur(4px);
+    color: var(--text);
+    border: 1px solid var(--line);
     border-radius: 50%;
     font-size: 14px;
     cursor: pointer;
@@ -422,103 +537,160 @@
   .photo-add {
     aspect-ratio: 1;
     border: 1.5px dashed var(--line);
-    background: var(--paper);
-    border-radius: 4px;
+    background: var(--bg-card);
+    border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--ink-soft);
-    font-size: 24px;
+    color: var(--accent);
+    font-size: 28px;
     cursor: pointer;
     font-family: inherit;
+    transition: all 0.2s;
   }
-  .photo-add:active { background: var(--paper-deep); }
+  .photo-add:active {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+  }
   .photo-input { display: none; }
 
   .save-bar {
-    padding: 12px 16px;
-    border-top: 1px solid var(--line-soft);
-    background: var(--paper);
+    padding: 14px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--bg-elev);
     flex-shrink: 0;
   }
   .save-btn {
     width: 100%;
-    padding: 12px;
-    background: var(--ink);
-    color: var(--paper);
+    padding: 14px;
+    background: var(--accent);
+    color: var(--bg);
     border: none;
-    border-radius: 4px;
+    border-radius: 6px;
     font-family: inherit;
-    font-size: 14px;
-    letter-spacing: 0.1em;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.18em;
     cursor: pointer;
+    text-transform: uppercase;
+    box-shadow: 0 0 20px var(--accent-glow);
+    transition: all 0.2s;
   }
-  .save-btn:active { background: var(--sumi); }
+  .save-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 0 12px var(--accent-glow);
+  }
+  .save-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
   /* ポップアップ */
   .leaflet-popup-content-wrapper {
-    border-radius: 4px;
-    background: var(--paper);
-    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    border-radius: 8px;
+    background: var(--bg-elev);
+    border: 1px solid var(--line);
+    box-shadow: 0 4px 20px rgba(0, 217, 255, 0.1), 0 2px 8px rgba(0,0,0,0.5);
+    color: var(--text);
   }
-  .leaflet-popup-content { margin: 10px 12px; font-family: inherit; font-size: 13px; }
-  .leaflet-popup-tip { background: var(--paper); }
-  .popup-name { font-weight: 500; margin-bottom: 2px; }
-  .popup-loc { font-size: 11px; color: var(--ink-soft); }
+  .leaflet-popup-content { margin: 12px 14px; font-family: inherit; font-size: 13px; }
+  .leaflet-popup-tip { background: var(--bg-elev); border: 1px solid var(--line); }
+  .leaflet-popup-close-button { color: var(--text-mute) !important; }
+  .popup-name { font-weight: 600; margin-bottom: 3px; color: var(--text); }
+  .popup-loc { font-size: 11px; color: var(--text-mute); }
   .popup-btn {
-    margin-top: 6px;
-    padding: 4px 10px;
-    background: var(--ink);
-    color: var(--paper);
+    margin-top: 8px;
+    padding: 5px 12px;
+    background: var(--accent);
+    color: var(--bg);
     border: none;
-    border-radius: 3px;
+    border-radius: 4px;
     cursor: pointer;
-    font-family: inherit;
-    font-size: 11px;
-    letter-spacing: 0.08em;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    box-shadow: 0 0 8px var(--accent-glow);
   }
 
   /* 統計セクション */
   .stats-section {
-    margin-top: 14px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line-soft);
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 1px solid var(--line);
   }
   .stats-section h3 {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--ink-soft);
-    font-weight: 400;
-    margin-bottom: 8px;
+    font-family: "SF Mono", "JetBrains Mono", monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-mute);
+    font-weight: 500;
+    margin-bottom: 12px;
+    text-transform: uppercase;
   }
   /* メニューボタン */
   .menu-btn {
     background: none;
     border: none;
     font-family: inherit;
-    font-size: 11px;
-    color: var(--ink-soft);
+    font-size: 12px;
+    color: var(--text-soft);
     cursor: pointer;
     padding: 0;
-    letter-spacing: 0.1em;
+    letter-spacing: 0.05em;
   }
-  .menu-btn:hover { color: var(--vermillion); }
+  .menu-btn:hover { color: var(--accent); }
+  .menu-btn.danger:hover { color: var(--danger); }
+
+  /* Leaflet 内部UIをダーク化 */
+  .leaflet-container { font-family: inherit; background: var(--bg); }
+  .leaflet-control-zoom a {
+    background: var(--bg-elev) !important;
+    color: var(--text) !important;
+    border-color: var(--line) !important;
+  }
+  .leaflet-control-zoom a:hover {
+    background: var(--bg-card) !important;
+  }
+  .leaflet-control-attribution {
+    background: rgba(10, 14, 20, 0.8) !important;
+    color: var(--text-mute) !important;
+    backdrop-filter: blur(4px);
+  }
+  .leaflet-control-attribution a { color: var(--text-soft) !important; }
 </style>
 </head>
 <body>
 <div class="app">
   <header>
     <div class="title-row">
-      <h1>日本の滝百選</h1>
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="iconGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#00d9ff" stop-opacity="0.9"/>
+              <stop offset="100%" stop-color="#ff2d92" stop-opacity="0.9"/>
+            </linearGradient>
+          </defs>
+          <line x1="6" y1="2" x2="6" y2="22" stroke="url(#iconGrad)" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="12" y1="4" x2="12" y2="20" stroke="url(#iconGrad)" stroke-width="1.6" stroke-linecap="round"/>
+          <line x1="18" y1="2" x2="18" y2="22" stroke="url(#iconGrad)" stroke-width="1.6" stroke-linecap="round"/>
+          <circle cx="6" cy="22" r="1.2" fill="#ff2d92"/>
+          <circle cx="12" cy="20" r="1.2" fill="#ff2d92"/>
+          <circle cx="18" cy="22" r="1.2" fill="#ff2d92"/>
+        </svg>
+        <h1>FALLS<span class="accent">100</span></h1>
+      </div>
       <div class="progress">
-        <strong id="visited-count">0</strong> <span style="opacity:0.5">/</span> 100
+        <strong id="visited-count">0</strong><span style="opacity:0.4">/100</span>
       </div>
     </div>
     <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
     <div class="tabs">
-      <button class="tab active" data-view="map">地 図</button>
-      <button class="tab" data-view="list">一 覧</button>
-      <button class="tab" data-view="stats">記 録</button>
+      <button class="tab active" data-view="map">MAP</button>
+      <button class="tab" data-view="list">LIST</button>
+      <button class="tab" data-view="stats">STATS</button>
     </div>
   </header>
 
@@ -548,9 +720,13 @@
   <div class="sheet-handle"></div>
   <div class="sheet-header">
     <div class="sheet-num" id="sheet-num"></div>
-    <div class="sheet-title" id="sheet-title"></div>
+    <a class="sheet-title" id="sheet-title" target="_blank" rel="noopener noreferrer"></a>
     <div class="sheet-kana" id="sheet-kana"></div>
     <div class="sheet-loc" id="sheet-loc"></div>
+    <div class="sheet-meta">
+      <span class="sheet-difficulty" id="sheet-difficulty"></span>
+      <a class="sheet-map-btn" id="sheet-map-btn" target="_blank" rel="noopener noreferrer">Googleマップ ↗</a>
+    </div>
   </div>
   <div class="sheet-body">
     <div class="toggle-row">
@@ -577,7 +753,7 @@ if (typeof L === 'undefined') {
   throw new Error('Leaflet not loaded');
 }
 
-const FALLS = [{"id": 1, "name": "羽衣の滝", "kana": "はごろものたき", "pref": "北海道", "city": "上川郡東川町", "lat": 43.6539, "lng": 142.8569}, {"id": 2, "name": "飛竜 賀老の滝", "kana": "ひりゅう がろうのたき", "pref": "北海道", "city": "島牧郡島牧村", "lat": 42.6986, "lng": 140.0744}, {"id": 3, "name": "インクラの滝", "kana": "いんくらのたき", "pref": "北海道", "city": "白老郡白老町", "lat": 42.5839, "lng": 141.2531}, {"id": 4, "name": "流星・銀河の滝", "kana": "りゅうせい・ぎんがのたき", "pref": "北海道", "city": "上川郡上川町", "lat": 43.7242, "lng": 142.9047}, {"id": 5, "name": "アシリベツの滝", "kana": "あしりべつのたき", "pref": "北海道", "city": "札幌市南区", "lat": 42.9886, "lng": 141.4078}, {"id": 6, "name": "オシンコシンの滝", "kana": "おしんこしんのたき", "pref": "北海道", "city": "斜里郡斜里町", "lat": 44.0583, "lng": 144.9056}, {"id": 7, "name": "松見の滝", "kana": "まつみのたき", "pref": "青森県", "city": "十和田市", "lat": 40.5197, "lng": 140.9636}, {"id": 8, "name": "くろくまの滝", "kana": "くろくまのたき", "pref": "青森県", "city": "西津軽郡鯵ヶ沢町", "lat": 40.6789, "lng": 140.1569}, {"id": 9, "name": "不動の滝", "kana": "ふどうのたき", "pref": "岩手県", "city": "八幡平市", "lat": 39.9625, "lng": 141.0764}, {"id": 10, "name": "秋保大滝", "kana": "あきうおおたき", "pref": "宮城県", "city": "仙台市太白区", "lat": 38.2628, "lng": 140.6708}, {"id": 11, "name": "三階の滝", "kana": "さんかいのたき", "pref": "宮城県", "city": "刈田郡蔵王町", "lat": 38.1283, "lng": 140.5375}, {"id": 12, "name": "茶釜の滝", "kana": "ちゃがまのたき", "pref": "秋田県", "city": "鹿角市", "lat": 40.0708, "lng": 140.8056}, {"id": 13, "name": "法体の滝", "kana": "ほったいのたき", "pref": "秋田県", "city": "由利本荘市", "lat": 39.1858, "lng": 140.2483}, {"id": 14, "name": "安の滝", "kana": "やすのたき", "pref": "秋田県", "city": "北秋田市", "lat": 39.9889, "lng": 140.5328}, {"id": 15, "name": "七滝", "kana": "ななたき", "pref": "秋田県", "city": "鹿角郡小坂町", "lat": 40.4097, "lng": 140.7686}, {"id": 16, "name": "七ツ滝", "kana": "ななつたき", "pref": "山形県", "city": "鶴岡市", "lat": 38.6233, "lng": 139.9189}, {"id": 17, "name": "滑川大滝", "kana": "なめがわおおたき", "pref": "山形県", "city": "米沢市", "lat": 37.9281, "lng": 140.1558}, {"id": 18, "name": "白糸の滝", "kana": "しらいとのたき", "pref": "山形県", "city": "最上郡戸沢村", "lat": 38.7256, "lng": 140.0394}, {"id": 19, "name": "乙字ケ滝", "kana": "おつじがたき", "pref": "福島県", "city": "須賀川市", "lat": 37.2992, "lng": 140.3825}, {"id": 20, "name": "銚子ケ滝", "kana": "ちょうしがたき", "pref": "福島県", "city": "郡山市", "lat": 37.5814, "lng": 140.2628}, {"id": 21, "name": "三条の滝", "kana": "さんじょうのたき", "pref": "福島県", "city": "南会津郡檜枝岐村", "lat": 36.9483, "lng": 139.2261}, {"id": 22, "name": "袋田の滝", "kana": "ふくろだのたき", "pref": "茨城県", "city": "久慈郡大子町", "lat": 36.7689, "lng": 140.4111}, {"id": 23, "name": "華厳の滝", "kana": "けごんのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7397, "lng": 139.5031}, {"id": 24, "name": "霧降の滝", "kana": "きりふりのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7656, "lng": 139.6356}, {"id": 25, "name": "棚下の不動滝", "kana": "たなしたのふどうたき", "pref": "群馬県", "city": "渋川市", "lat": 36.595, "lng": 139.0589}, {"id": 26, "name": "吹割の滝", "kana": "ふきわれのたき", "pref": "群馬県", "city": "沼田市", "lat": 36.7417, "lng": 139.2458}, {"id": 27, "name": "常布の滝", "kana": "じょうふのたき", "pref": "群馬県", "city": "吾妻郡草津町", "lat": 36.6428, "lng": 138.5481}, {"id": 28, "name": "丸神の滝", "kana": "まるがみのたき", "pref": "埼玉県", "city": "秩父郡小鹿野町", "lat": 36.0186, "lng": 138.9136}, {"id": 29, "name": "払沢の滝", "kana": "ほっさわのたき", "pref": "東京都", "city": "西多摩郡檜原村", "lat": 35.7497, "lng": 139.1583}, {"id": 30, "name": "早戸大滝", "kana": "はやとおおたき", "pref": "神奈川県", "city": "相模原市", "lat": 35.5497, "lng": 139.1644}, {"id": 31, "name": "洒水の滝", "kana": "しゃすいのたき", "pref": "神奈川県", "city": "足柄上郡山北町", "lat": 35.3508, "lng": 139.0822}, {"id": 32, "name": "七ツ釜五段の滝", "kana": "ななつがまごだんのたき", "pref": "山梨県", "city": "山梨市", "lat": 35.7986, "lng": 138.7144}, {"id": 33, "name": "仙娥滝", "kana": "せんがたき", "pref": "山梨県", "city": "甲府市", "lat": 35.7158, "lng": 138.5497}, {"id": 34, "name": "北精進ケ滝", "kana": "きたしょうじがたき", "pref": "山梨県", "city": "北杜市", "lat": 35.7531, "lng": 138.4011}, {"id": 35, "name": "鈴ヶ滝", "kana": "すずがたき", "pref": "新潟県", "city": "村上市", "lat": 38.4794, "lng": 139.5739}, {"id": 36, "name": "苗名滝", "kana": "なえなたき", "pref": "新潟県", "city": "妙高市", "lat": 36.865, "lng": 138.1283}, {"id": 37, "name": "惣滝", "kana": "そうたき", "pref": "新潟県", "city": "妙高市", "lat": 36.8961, "lng": 138.145}, {"id": 38, "name": "称名滝", "kana": "しょうみょうだき", "pref": "富山県", "city": "中新川郡立山町", "lat": 36.5736, "lng": 137.4919}, {"id": 39, "name": "姥ケ滝", "kana": "うばがたき", "pref": "石川県", "city": "白山市", "lat": 36.2089, "lng": 136.7394}, {"id": 40, "name": "龍双ケ滝", "kana": "りゅうそうがたき", "pref": "福井県", "city": "今立郡池田町", "lat": 35.8089, "lng": 136.5469}, {"id": 41, "name": "米子大瀑布", "kana": "よなこだいばくふ", "pref": "長野県", "city": "須坂市", "lat": 36.5614, "lng": 138.4961}, {"id": 42, "name": "三本滝", "kana": "さんぼんだき", "pref": "長野県", "city": "松本市", "lat": 36.1119, "lng": 137.6228}, {"id": 43, "name": "田立の滝", "kana": "ただちのたき", "pref": "長野県", "city": "木曽郡南木曽町", "lat": 35.6253, "lng": 137.5961}, {"id": 44, "name": "平湯大滝", "kana": "ひらゆおおたき", "pref": "岐阜県", "city": "高山市", "lat": 36.1556, "lng": 137.5631}, {"id": 45, "name": "養老の滝", "kana": "ようろうのたき", "pref": "岐阜県", "city": "養老郡養老町", "lat": 35.2856, "lng": 136.5494}, {"id": 46, "name": "根尾の滝", "kana": "ねおのたき", "pref": "岐阜県", "city": "下呂市", "lat": 35.9022, "lng": 137.4978}, {"id": 47, "name": "阿弥陀ケ滝", "kana": "あみだがたき", "pref": "岐阜県", "city": "郡上市", "lat": 35.9622, "lng": 136.8364}, {"id": 48, "name": "安倍の大滝", "kana": "あべのおおたき", "pref": "静岡県", "city": "静岡市葵区", "lat": 35.2517, "lng": 138.3119}, {"id": 49, "name": "浄蓮の滝", "kana": "じょうれんのたき", "pref": "静岡県", "city": "伊豆市", "lat": 34.8775, "lng": 138.9292}, {"id": 50, "name": "白糸の滝・音止の滝", "kana": "しらいとのたき・おとどめのたき", "pref": "静岡県", "city": "富士宮市", "lat": 35.3061, "lng": 138.5856}, {"id": 51, "name": "阿寺の七滝", "kana": "あてらのななたき", "pref": "愛知県", "city": "新城市", "lat": 35.0989, "lng": 137.5828}, {"id": 52, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "三重県", "city": "熊野市", "lat": 33.9344, "lng": 136.0806}, {"id": 53, "name": "赤目四十八滝", "kana": "あかめしじゅうはちたき", "pref": "三重県", "city": "名張市", "lat": 34.5694, "lng": 136.1042}, {"id": 54, "name": "七ツ釜滝", "kana": "ななつがまだき", "pref": "三重県", "city": "多気郡大台町", "lat": 34.1867, "lng": 136.0694}, {"id": 55, "name": "八ツ淵の滝", "kana": "やつぶちのたき", "pref": "滋賀県", "city": "高島市", "lat": 35.3808, "lng": 136.0286}, {"id": 56, "name": "金引の滝", "kana": "かなびきのたき", "pref": "京都府", "city": "宮津市", "lat": 35.5681, "lng": 135.1844}, {"id": 57, "name": "箕面滝", "kana": "みのおのたき", "pref": "大阪府", "city": "箕面市", "lat": 34.8503, "lng": 135.4728}, {"id": 58, "name": "猿尾滝", "kana": "さるおだき", "pref": "兵庫県", "city": "美方郡香美町", "lat": 35.4569, "lng": 134.5083}, {"id": 59, "name": "天滝", "kana": "てんだき", "pref": "兵庫県", "city": "養父市", "lat": 35.2828, "lng": 134.6511}, {"id": 60, "name": "原不動滝", "kana": "はらふどうたき", "pref": "兵庫県", "city": "宍粟市", "lat": 35.1583, "lng": 134.5331}, {"id": 61, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "兵庫県", "city": "神戸市中央区", "lat": 34.7144, "lng": 135.1972}, {"id": 62, "name": "双門の滝", "kana": "そうもんのたき", "pref": "奈良県", "city": "吉野郡天川村", "lat": 34.2358, "lng": 135.8642}, {"id": 63, "name": "不動七重の滝", "kana": "ふどうななえのたき", "pref": "奈良県", "city": "吉野郡下北山村", "lat": 34.0422, "lng": 135.8353}, {"id": 64, "name": "笹の滝", "kana": "ささのたき", "pref": "奈良県", "city": "吉野郡十津川村", "lat": 33.9489, "lng": 135.7981}, {"id": 65, "name": "中の滝", "kana": "なかのたき", "pref": "奈良県", "city": "吉野郡上北山村", "lat": 34.1825, "lng": 135.9486}, {"id": 66, "name": "桑ノ木の滝", "kana": "くわのきのたき", "pref": "和歌山県", "city": "新宮市", "lat": 33.8561, "lng": 135.7314}, {"id": 67, "name": "八草の滝", "kana": "はっそうのたき", "pref": "和歌山県", "city": "西牟婁郡白浜町", "lat": 33.725, "lng": 135.4514}, {"id": 68, "name": "那智滝", "kana": "なちのたき", "pref": "和歌山県", "city": "東牟婁郡那智勝浦町", "lat": 33.67, "lng": 135.8908}, {"id": 69, "name": "雨滝", "kana": "あめだき", "pref": "鳥取県", "city": "鳥取市", "lat": 35.4364, "lng": 134.3628}, {"id": 70, "name": "大山滝", "kana": "だいせんだき", "pref": "鳥取県", "city": "東伯郡琴浦町", "lat": 35.3447, "lng": 133.5961}, {"id": 71, "name": "壇鏡の滝", "kana": "だんぎょうのたき", "pref": "島根県", "city": "隠岐郡隠岐の島町", "lat": 36.2117, "lng": 133.25}, {"id": 72, "name": "龍頭八重滝", "kana": "りゅうずやえだき", "pref": "島根県", "city": "雲南市", "lat": 35.345, "lng": 132.8847}, {"id": 73, "name": "神庭の滝", "kana": "かんばのたき", "pref": "岡山県", "city": "真庭市", "lat": 35.0797, "lng": 133.6203}, {"id": 74, "name": "常清滝", "kana": "じょうせいだき", "pref": "広島県", "city": "三次市", "lat": 34.7917, "lng": 132.8333}, {"id": 75, "name": "寂地峡五竜の滝", "kana": "じゃくちきょうごりゅうのたき", "pref": "山口県", "city": "岩国市", "lat": 34.4611, "lng": 132.1144}, {"id": 76, "name": "大釜の滝", "kana": "おおがまのたき", "pref": "徳島県", "city": "那賀郡那賀町", "lat": 33.8606, "lng": 134.2261}, {"id": 77, "name": "轟九十九滝", "kana": "とどろきくじゅうくたき", "pref": "徳島県", "city": "海部郡海陽町", "lat": 33.7019, "lng": 134.4361}, {"id": 78, "name": "雨乞の滝", "kana": "あまごいのたき", "pref": "徳島県", "city": "名西郡神山町", "lat": 33.9758, "lng": 134.3542}, {"id": 79, "name": "雪輪の滝", "kana": "ゆきわのたき", "pref": "愛媛県", "city": "宇和島市", "lat": 33.4194, "lng": 132.6647}, {"id": 80, "name": "御来光の滝", "kana": "ごらいこうのたき", "pref": "愛媛県", "city": "上浮穴郡久万高原町", "lat": 33.7689, "lng": 133.1408}, {"id": 81, "name": "龍王の滝", "kana": "りゅうおうのたき", "pref": "高知県", "city": "長岡郡大豊町", "lat": 33.765, "lng": 133.6772}, {"id": 82, "name": "轟の滝", "kana": "とどろのたき", "pref": "高知県", "city": "香美市", "lat": 33.5806, "lng": 133.7044}, {"id": 83, "name": "大樽の滝", "kana": "おおたるのたき", "pref": "高知県", "city": "高岡郡越知町", "lat": 33.5022, "lng": 133.0017}, {"id": 84, "name": "観音の滝", "kana": "かんのんのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.4561, "lng": 129.9197}, {"id": 85, "name": "見帰りの滝", "kana": "みかえりのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.3914, "lng": 129.9911}, {"id": 86, "name": "四十三万滝", "kana": "しじゅうさんまんたき", "pref": "熊本県", "city": "菊池市", "lat": 33.0139, "lng": 130.9422}, {"id": 87, "name": "栴檀轟の滝", "kana": "せんだんとどろのたき", "pref": "熊本県", "city": "八代市泉町", "lat": 32.4761, "lng": 131.0419}, {"id": 88, "name": "鹿目の滝", "kana": "かなめのたき", "pref": "熊本県", "city": "人吉市", "lat": 32.1989, "lng": 130.7619}, {"id": 89, "name": "数鹿流ヶ滝", "kana": "すがるがたき", "pref": "熊本県", "city": "阿蘇郡南阿蘇村", "lat": 32.8889, "lng": 131.0083}, {"id": 90, "name": "原尻の滝", "kana": "はらじりのたき", "pref": "大分県", "city": "豊後大野市", "lat": 32.9869, "lng": 131.4658}, {"id": 91, "name": "震動の滝", "kana": "しんどうのたき", "pref": "大分県", "city": "玖珠郡九重町", "lat": 33.0967, "lng": 131.2533}, {"id": 92, "name": "東椎屋の滝", "kana": "ひがししいやのたき", "pref": "大分県", "city": "宇佐市安心院町", "lat": 33.4719, "lng": 131.4458}, {"id": 93, "name": "西椎屋の滝", "kana": "にししいやのたき", "pref": "大分県", "city": "玖珠郡玖珠町", "lat": 33.3978, "lng": 131.3367}, {"id": 94, "name": "関之尾滝", "kana": "せきのおのたき", "pref": "宮崎県", "city": "都城市", "lat": 31.7361, "lng": 131.0011}, {"id": 95, "name": "矢研の滝", "kana": "やとぎのたき", "pref": "宮崎県", "city": "児湯郡都農町", "lat": 32.4175, "lng": 131.4189}, {"id": 96, "name": "真名井の滝", "kana": "まないのたき", "pref": "宮崎県", "city": "西臼杵郡高千穂町", "lat": 32.71, "lng": 131.3072}, {"id": 97, "name": "行縢の滝", "kana": "むかばきのたき", "pref": "宮崎県", "city": "延岡市", "lat": 32.6044, "lng": 131.5489}, {"id": 98, "name": "龍門滝", "kana": "りゅうもんのたき", "pref": "鹿児島県", "city": "姶良市加治木町", "lat": 31.7361, "lng": 130.6258}, {"id": 99, "name": "大川の滝", "kana": "おおこのたき", "pref": "鹿児島県", "city": "熊毛郡屋久島町", "lat": 30.3447, "lng": 130.4242}, {"id": 100, "name": "マリユドゥの滝", "kana": "まりゆどぅのたき", "pref": "沖縄県", "city": "八重山郡竹富町", "lat": 24.3486, "lng": 123.8497}];
+const FALLS = [{"id": 1, "name": "羽衣の滝", "kana": "はごろものたき", "pref": "北海道", "city": "上川郡東川町", "lat": 43.6539, "lng": 142.8569, "difficulty": 2}, {"id": 2, "name": "飛竜 賀老の滝", "kana": "ひりゅう がろうのたき", "pref": "北海道", "city": "島牧郡島牧村", "lat": 42.6986, "lng": 140.0744, "difficulty": 2}, {"id": 3, "name": "インクラの滝", "kana": "いんくらのたき", "pref": "北海道", "city": "白老郡白老町", "lat": 42.5839, "lng": 141.2531, "difficulty": 2}, {"id": 4, "name": "流星・銀河の滝", "kana": "りゅうせい・ぎんがのたき", "pref": "北海道", "city": "上川郡上川町", "lat": 43.7242, "lng": 142.9047, "difficulty": 1}, {"id": 5, "name": "アシリベツの滝", "kana": "あしりべつのたき", "pref": "北海道", "city": "札幌市南区", "lat": 42.9886, "lng": 141.4078, "difficulty": 2}, {"id": 6, "name": "オシンコシンの滝", "kana": "おしんこしんのたき", "pref": "北海道", "city": "斜里郡斜里町", "lat": 44.0583, "lng": 144.9056, "difficulty": 1}, {"id": 7, "name": "松見の滝", "kana": "まつみのたき", "pref": "青森県", "city": "十和田市", "lat": 40.5197, "lng": 140.9636, "difficulty": 3}, {"id": 8, "name": "くろくまの滝", "kana": "くろくまのたき", "pref": "青森県", "city": "西津軽郡鯵ヶ沢町", "lat": 40.6789, "lng": 140.1569, "difficulty": 2}, {"id": 9, "name": "不動の滝", "kana": "ふどうのたき", "pref": "岩手県", "city": "八幡平市", "lat": 39.9625, "lng": 141.0764, "difficulty": 2}, {"id": 10, "name": "秋保大滝", "kana": "あきうおおたき", "pref": "宮城県", "city": "仙台市太白区", "lat": 38.2628, "lng": 140.6708, "difficulty": 1}, {"id": 11, "name": "三階の滝", "kana": "さんかいのたき", "pref": "宮城県", "city": "刈田郡蔵王町", "lat": 38.1283, "lng": 140.5375, "difficulty": 1}, {"id": 12, "name": "茶釜の滝", "kana": "ちゃがまのたき", "pref": "秋田県", "city": "鹿角市", "lat": 40.0708, "lng": 140.8056, "difficulty": 4}, {"id": 13, "name": "法体の滝", "kana": "ほったいのたき", "pref": "秋田県", "city": "由利本荘市", "lat": 39.1858, "lng": 140.2483, "difficulty": 2}, {"id": 14, "name": "安の滝", "kana": "やすのたき", "pref": "秋田県", "city": "北秋田市", "lat": 39.9889, "lng": 140.5328, "difficulty": 3}, {"id": 15, "name": "七滝", "kana": "ななたき", "pref": "秋田県", "city": "鹿角郡小坂町", "lat": 40.4097, "lng": 140.7686, "difficulty": 1}, {"id": 16, "name": "七ツ滝", "kana": "ななつたき", "pref": "山形県", "city": "鶴岡市", "lat": 38.6233, "lng": 139.9189, "difficulty": 2}, {"id": 17, "name": "滑川大滝", "kana": "なめがわおおたき", "pref": "山形県", "city": "米沢市", "lat": 37.9281, "lng": 140.1558, "difficulty": 3}, {"id": 18, "name": "白糸の滝", "kana": "しらいとのたき", "pref": "山形県", "city": "最上郡戸沢村", "lat": 38.7256, "lng": 140.0394, "difficulty": 1}, {"id": 19, "name": "乙字ケ滝", "kana": "おつじがたき", "pref": "福島県", "city": "須賀川市", "lat": 37.2992, "lng": 140.3825, "difficulty": 1}, {"id": 20, "name": "銚子ケ滝", "kana": "ちょうしがたき", "pref": "福島県", "city": "郡山市", "lat": 37.5814, "lng": 140.2628, "difficulty": 3}, {"id": 21, "name": "三条の滝", "kana": "さんじょうのたき", "pref": "福島県", "city": "南会津郡檜枝岐村", "lat": 36.9483, "lng": 139.2261, "difficulty": 4}, {"id": 22, "name": "袋田の滝", "kana": "ふくろだのたき", "pref": "茨城県", "city": "久慈郡大子町", "lat": 36.7689, "lng": 140.4111, "difficulty": 1}, {"id": 23, "name": "華厳の滝", "kana": "けごんのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7397, "lng": 139.5031, "difficulty": 1}, {"id": 24, "name": "霧降の滝", "kana": "きりふりのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7656, "lng": 139.6356, "difficulty": 1}, {"id": 25, "name": "棚下の不動滝", "kana": "たなしたのふどうたき", "pref": "群馬県", "city": "渋川市", "lat": 36.595, "lng": 139.0589, "difficulty": 2}, {"id": 26, "name": "吹割の滝", "kana": "ふきわれのたき", "pref": "群馬県", "city": "沼田市", "lat": 36.7417, "lng": 139.2458, "difficulty": 1}, {"id": 27, "name": "常布の滝", "kana": "じょうふのたき", "pref": "群馬県", "city": "吾妻郡草津町", "lat": 36.6428, "lng": 138.5481, "difficulty": 4}, {"id": 28, "name": "丸神の滝", "kana": "まるがみのたき", "pref": "埼玉県", "city": "秩父郡小鹿野町", "lat": 36.0186, "lng": 138.9136, "difficulty": 2}, {"id": 29, "name": "払沢の滝", "kana": "ほっさわのたき", "pref": "東京都", "city": "西多摩郡檜原村", "lat": 35.7497, "lng": 139.1583, "difficulty": 2}, {"id": 30, "name": "早戸大滝", "kana": "はやとおおたき", "pref": "神奈川県", "city": "相模原市", "lat": 35.5497, "lng": 139.1644, "difficulty": 4}, {"id": 31, "name": "洒水の滝", "kana": "しゃすいのたき", "pref": "神奈川県", "city": "足柄上郡山北町", "lat": 35.3508, "lng": 139.0822, "difficulty": 1}, {"id": 32, "name": "七ツ釜五段の滝", "kana": "ななつがまごだんのたき", "pref": "山梨県", "city": "山梨市", "lat": 35.7986, "lng": 138.7144, "difficulty": 3}, {"id": 33, "name": "仙娥滝", "kana": "せんがたき", "pref": "山梨県", "city": "甲府市", "lat": 35.7158, "lng": 138.5497, "difficulty": 1}, {"id": 34, "name": "北精進ケ滝", "kana": "きたしょうじがたき", "pref": "山梨県", "city": "北杜市", "lat": 35.7531, "lng": 138.4011, "difficulty": 3}, {"id": 35, "name": "鈴ヶ滝", "kana": "すずがたき", "pref": "新潟県", "city": "村上市", "lat": 38.4794, "lng": 139.5739, "difficulty": 2}, {"id": 36, "name": "苗名滝", "kana": "なえなたき", "pref": "新潟県", "city": "妙高市", "lat": 36.865, "lng": 138.1283, "difficulty": 1}, {"id": 37, "name": "惣滝", "kana": "そうたき", "pref": "新潟県", "city": "妙高市", "lat": 36.8961, "lng": 138.145, "difficulty": 3}, {"id": 38, "name": "称名滝", "kana": "しょうみょうだき", "pref": "富山県", "city": "中新川郡立山町", "lat": 36.5736, "lng": 137.4919, "difficulty": 2}, {"id": 39, "name": "姥ケ滝", "kana": "うばがたき", "pref": "石川県", "city": "白山市", "lat": 36.2089, "lng": 136.7394, "difficulty": 2}, {"id": 40, "name": "龍双ケ滝", "kana": "りゅうそうがたき", "pref": "福井県", "city": "今立郡池田町", "lat": 35.8089, "lng": 136.5469, "difficulty": 1}, {"id": 41, "name": "米子大瀑布", "kana": "よなこだいばくふ", "pref": "長野県", "city": "須坂市", "lat": 36.5614, "lng": 138.4961, "difficulty": 3}, {"id": 42, "name": "三本滝", "kana": "さんぼんだき", "pref": "長野県", "city": "松本市", "lat": 36.1119, "lng": 137.6228, "difficulty": 2}, {"id": 43, "name": "田立の滝", "kana": "ただちのたき", "pref": "長野県", "city": "木曽郡南木曽町", "lat": 35.6253, "lng": 137.5961, "difficulty": 3}, {"id": 44, "name": "平湯大滝", "kana": "ひらゆおおたき", "pref": "岐阜県", "city": "高山市", "lat": 36.1556, "lng": 137.5631, "difficulty": 1}, {"id": 45, "name": "養老の滝", "kana": "ようろうのたき", "pref": "岐阜県", "city": "養老郡養老町", "lat": 35.2856, "lng": 136.5494, "difficulty": 1}, {"id": 46, "name": "根尾の滝", "kana": "ねおのたき", "pref": "岐阜県", "city": "下呂市", "lat": 35.9022, "lng": 137.4978, "difficulty": 3}, {"id": 47, "name": "阿弥陀ケ滝", "kana": "あみだがたき", "pref": "岐阜県", "city": "郡上市", "lat": 35.9622, "lng": 136.8364, "difficulty": 1}, {"id": 48, "name": "安倍の大滝", "kana": "あべのおおたき", "pref": "静岡県", "city": "静岡市葵区", "lat": 35.2517, "lng": 138.3119, "difficulty": 3}, {"id": 49, "name": "浄蓮の滝", "kana": "じょうれんのたき", "pref": "静岡県", "city": "伊豆市", "lat": 34.8775, "lng": 138.9292, "difficulty": 1}, {"id": 50, "name": "白糸の滝・音止の滝", "kana": "しらいとのたき・おとどめのたき", "pref": "静岡県", "city": "富士宮市", "lat": 35.3061, "lng": 138.5856, "difficulty": 1}, {"id": 51, "name": "阿寺の七滝", "kana": "あてらのななたき", "pref": "愛知県", "city": "新城市", "lat": 35.0989, "lng": 137.5828, "difficulty": 2}, {"id": 52, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "三重県", "city": "熊野市", "lat": 33.9344, "lng": 136.0806, "difficulty": 2}, {"id": 53, "name": "赤目四十八滝", "kana": "あかめしじゅうはちたき", "pref": "三重県", "city": "名張市", "lat": 34.5694, "lng": 136.1042, "difficulty": 2}, {"id": 54, "name": "七ツ釜滝", "kana": "ななつがまだき", "pref": "三重県", "city": "多気郡大台町", "lat": 34.1867, "lng": 136.0694, "difficulty": 4}, {"id": 55, "name": "八ツ淵の滝", "kana": "やつぶちのたき", "pref": "滋賀県", "city": "高島市", "lat": 35.3808, "lng": 136.0286, "difficulty": 4}, {"id": 56, "name": "金引の滝", "kana": "かなびきのたき", "pref": "京都府", "city": "宮津市", "lat": 35.5681, "lng": 135.1844, "difficulty": 1}, {"id": 57, "name": "箕面滝", "kana": "みのおのたき", "pref": "大阪府", "city": "箕面市", "lat": 34.8503, "lng": 135.4728, "difficulty": 1}, {"id": 58, "name": "猿尾滝", "kana": "さるおだき", "pref": "兵庫県", "city": "美方郡香美町", "lat": 35.4569, "lng": 134.5083, "difficulty": 1}, {"id": 59, "name": "天滝", "kana": "てんだき", "pref": "兵庫県", "city": "養父市", "lat": 35.2828, "lng": 134.6511, "difficulty": 3}, {"id": 60, "name": "原不動滝", "kana": "はらふどうたき", "pref": "兵庫県", "city": "宍粟市", "lat": 35.1583, "lng": 134.5331, "difficulty": 2}, {"id": 61, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "兵庫県", "city": "神戸市中央区", "lat": 34.7144, "lng": 135.1972, "difficulty": 1}, {"id": 62, "name": "双門の滝", "kana": "そうもんのたき", "pref": "奈良県", "city": "吉野郡天川村", "lat": 34.2358, "lng": 135.8642, "difficulty": 4}, {"id": 63, "name": "不動七重の滝", "kana": "ふどうななえのたき", "pref": "奈良県", "city": "吉野郡下北山村", "lat": 34.0422, "lng": 135.8353, "difficulty": 2}, {"id": 64, "name": "笹の滝", "kana": "ささのたき", "pref": "奈良県", "city": "吉野郡十津川村", "lat": 33.9489, "lng": 135.7981, "difficulty": 2}, {"id": 65, "name": "中の滝", "kana": "なかのたき", "pref": "奈良県", "city": "吉野郡上北山村", "lat": 34.1825, "lng": 135.9486, "difficulty": 4}, {"id": 66, "name": "桑ノ木の滝", "kana": "くわのきのたき", "pref": "和歌山県", "city": "新宮市", "lat": 33.8561, "lng": 135.7314, "difficulty": 3}, {"id": 67, "name": "八草の滝", "kana": "はっそうのたき", "pref": "和歌山県", "city": "西牟婁郡白浜町", "lat": 33.725, "lng": 135.4514, "difficulty": 2}, {"id": 68, "name": "那智滝", "kana": "なちのたき", "pref": "和歌山県", "city": "東牟婁郡那智勝浦町", "lat": 33.67, "lng": 135.8908, "difficulty": 1}, {"id": 69, "name": "雨滝", "kana": "あめだき", "pref": "鳥取県", "city": "鳥取市", "lat": 35.4364, "lng": 134.3628, "difficulty": 2}, {"id": 70, "name": "大山滝", "kana": "だいせんだき", "pref": "鳥取県", "city": "東伯郡琴浦町", "lat": 35.3447, "lng": 133.5961, "difficulty": 3}, {"id": 71, "name": "壇鏡の滝", "kana": "だんぎょうのたき", "pref": "島根県", "city": "隠岐郡隠岐の島町", "lat": 36.2117, "lng": 133.25, "difficulty": 2}, {"id": 72, "name": "龍頭八重滝", "kana": "りゅうずやえだき", "pref": "島根県", "city": "雲南市", "lat": 35.345, "lng": 132.8847, "difficulty": 2}, {"id": 73, "name": "神庭の滝", "kana": "かんばのたき", "pref": "岡山県", "city": "真庭市", "lat": 35.0797, "lng": 133.6203, "difficulty": 1}, {"id": 74, "name": "常清滝", "kana": "じょうせいだき", "pref": "広島県", "city": "三次市", "lat": 34.7917, "lng": 132.8333, "difficulty": 2}, {"id": 75, "name": "寂地峡五竜の滝", "kana": "じゃくちきょうごりゅうのたき", "pref": "山口県", "city": "岩国市", "lat": 34.4611, "lng": 132.1144, "difficulty": 2}, {"id": 76, "name": "大釜の滝", "kana": "おおがまのたき", "pref": "徳島県", "city": "那賀郡那賀町", "lat": 33.8606, "lng": 134.2261, "difficulty": 2}, {"id": 77, "name": "轟九十九滝", "kana": "とどろきくじゅうくたき", "pref": "徳島県", "city": "海部郡海陽町", "lat": 33.7019, "lng": 134.4361, "difficulty": 3}, {"id": 78, "name": "雨乞の滝", "kana": "あまごいのたき", "pref": "徳島県", "city": "名西郡神山町", "lat": 33.9758, "lng": 134.3542, "difficulty": 2}, {"id": 79, "name": "雪輪の滝", "kana": "ゆきわのたき", "pref": "愛媛県", "city": "宇和島市", "lat": 33.4194, "lng": 132.6647, "difficulty": 2}, {"id": 80, "name": "御来光の滝", "kana": "ごらいこうのたき", "pref": "愛媛県", "city": "上浮穴郡久万高原町", "lat": 33.7689, "lng": 133.1408, "difficulty": 4}, {"id": 81, "name": "龍王の滝", "kana": "りゅうおうのたき", "pref": "高知県", "city": "長岡郡大豊町", "lat": 33.765, "lng": 133.6772, "difficulty": 2}, {"id": 82, "name": "轟の滝", "kana": "とどろのたき", "pref": "高知県", "city": "香美市", "lat": 33.5806, "lng": 133.7044, "difficulty": 2}, {"id": 83, "name": "大樽の滝", "kana": "おおたるのたき", "pref": "高知県", "city": "高岡郡越知町", "lat": 33.5022, "lng": 133.0017, "difficulty": 2}, {"id": 84, "name": "観音の滝", "kana": "かんのんのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.4561, "lng": 129.9197, "difficulty": 1}, {"id": 85, "name": "見帰りの滝", "kana": "みかえりのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.3914, "lng": 129.9911, "difficulty": 1}, {"id": 86, "name": "四十三万滝", "kana": "しじゅうさんまんたき", "pref": "熊本県", "city": "菊池市", "lat": 33.0139, "lng": 130.9422, "difficulty": 2}, {"id": 87, "name": "栴檀轟の滝", "kana": "せんだんとどろのたき", "pref": "熊本県", "city": "八代市泉町", "lat": 32.4761, "lng": 131.0419, "difficulty": 2}, {"id": 88, "name": "鹿目の滝", "kana": "かなめのたき", "pref": "熊本県", "city": "人吉市", "lat": 32.1989, "lng": 130.7619, "difficulty": 1}, {"id": 89, "name": "数鹿流ヶ滝", "kana": "すがるがたき", "pref": "熊本県", "city": "阿蘇郡南阿蘇村", "lat": 32.8889, "lng": 131.0083, "difficulty": 1}, {"id": 90, "name": "原尻の滝", "kana": "はらじりのたき", "pref": "大分県", "city": "豊後大野市", "lat": 32.9869, "lng": 131.4658, "difficulty": 1}, {"id": 91, "name": "震動の滝", "kana": "しんどうのたき", "pref": "大分県", "city": "玖珠郡九重町", "lat": 33.0967, "lng": 131.2533, "difficulty": 2}, {"id": 92, "name": "東椎屋の滝", "kana": "ひがししいやのたき", "pref": "大分県", "city": "宇佐市安心院町", "lat": 33.4719, "lng": 131.4458, "difficulty": 2}, {"id": 93, "name": "西椎屋の滝", "kana": "にししいやのたき", "pref": "大分県", "city": "玖珠郡玖珠町", "lat": 33.3978, "lng": 131.3367, "difficulty": 2}, {"id": 94, "name": "関之尾滝", "kana": "せきのおのたき", "pref": "宮崎県", "city": "都城市", "lat": 31.7361, "lng": 131.0011, "difficulty": 1}, {"id": 95, "name": "矢研の滝", "kana": "やとぎのたき", "pref": "宮崎県", "city": "児湯郡都農町", "lat": 32.4175, "lng": 131.4189, "difficulty": 2}, {"id": 96, "name": "真名井の滝", "kana": "まないのたき", "pref": "宮崎県", "city": "西臼杵郡高千穂町", "lat": 32.71, "lng": 131.3072, "difficulty": 1}, {"id": 97, "name": "行縢の滝", "kana": "むかばきのたき", "pref": "宮崎県", "city": "延岡市", "lat": 32.6044, "lng": 131.5489, "difficulty": 3}, {"id": 98, "name": "龍門滝", "kana": "りゅうもんのたき", "pref": "鹿児島県", "city": "姶良市加治木町", "lat": 31.7361, "lng": 130.6258, "difficulty": 1}, {"id": 99, "name": "大川の滝", "kana": "おおこのたき", "pref": "鹿児島県", "city": "熊毛郡屋久島町", "lat": 30.3447, "lng": 130.4242, "difficulty": 1}, {"id": 100, "name": "マリユドゥの滝", "kana": "まりゆどぅのたき", "pref": "沖縄県", "city": "八重山郡竹富町", "lat": 24.3486, "lng": 123.8497, "difficulty": 3}];
 
 // ===== 状態管理 =====
 let visits = {}; // {id: {visited:bool, date:'YYYY-MM-DD', memo:'', photos:[base64...]}}
@@ -714,15 +890,15 @@ const map = L.map('map', {
 });
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   attribution: '© OpenStreetMap',
-  maxZoom: 18
+  maxZoom: 19
 }).addTo(map);
 
 function makeIcon(visited) {
   return L.divIcon({
     className: '',
     html: `<span class="pin ${visited ? 'visited' : 'unvisited'}"></span>`,
-    iconSize: [22, 22],
-    iconAnchor: [11, 11]
+    iconSize: [18, 18],
+    iconAnchor: [9, 9]
   });
 }
 
@@ -735,6 +911,7 @@ function renderMarkers() {
     marker.bindPopup(`
       <div class="popup-name">${f.name}</div>
       <div class="popup-loc">${f.pref} ${f.city}</div>
+      <div class="popup-loc" style="color:var(--gold); margin-top:2px;">${diffStars(f.difficulty)}</div>
       <button class="popup-btn" onclick="openSheet(${f.id})">詳 細</button>
     `);
     markers[f.id] = marker;
@@ -764,6 +941,10 @@ function renderFilterChips() {
     { key: 'all', label: '全て' },
     { key: 'visited', label: '訪問済' },
     { key: 'unvisited', label: '未訪問' },
+    { key: 'diff:1', label: '★ 楽勝' },
+    { key: 'diff:2', label: '★★ 軽め' },
+    { key: 'diff:3', label: '★★★ ハイク' },
+    { key: 'diff:4', label: '★★★★ 登山' },
     ...prefs.map(p => ({ key: 'pref:' + p, label: p }))
   ];
   bar.innerHTML = items.map(it =>
@@ -786,6 +967,9 @@ function renderListItems() {
   else if (currentFilter.startsWith('pref:')) {
     const p = currentFilter.slice(5);
     items = items.filter(f => f.pref === p);
+  } else if (currentFilter.startsWith('diff:')) {
+    const d = parseInt(currentFilter.slice(5));
+    items = items.filter(f => f.difficulty === d);
   }
   container.innerHTML = items.map(f => {
     const v = getVisit(f.id);
@@ -794,7 +978,7 @@ function renderListItems() {
       <div class="list-item" data-id="${f.id}">
         <div class="check-circle ${v.visited ? 'visited' : ''}"></div>
         <div class="list-item-body">
-          <div class="list-item-name"><span class="list-item-num">№${String(f.id).padStart(3,'0')}</span>${f.name}</div>
+          <div class="list-item-name"><span class="list-item-num">№${String(f.id).padStart(3,'0')}</span>${f.name}<span class="diff-badge">${diffStars(f.difficulty)}</span></div>
           <div class="list-item-meta">${f.pref}　${f.city}</div>
         </div>
         ${photo}
@@ -831,44 +1015,62 @@ function renderStats() {
   const c = document.getElementById('stats-content');
   c.innerHTML = `
     <div class="stats-section" style="margin-top:0; padding-top:0; border-top:none;">
-      <h3>達 成 状 況</h3>
-      <div style="font-size:32px; font-feature-settings:'tnum'; color:var(--ink); letter-spacing:0.04em;">
-        ${visited.length}<span style="font-size:16px; color:var(--ink-soft); margin-left:4px;">/ 100</span>
+      <h3>進 捗</h3>
+      <div style="font-family:'SF Mono','JetBrains Mono',monospace; font-size:48px; font-weight:300; color:var(--text); letter-spacing:-0.02em; line-height:1; text-shadow: 0 0 20px var(--accent-glow);">
+        ${visited.length}<span style="font-size:20px; color:var(--text-mute); margin-left:6px; font-weight:300;">/ 100</span>
       </div>
-      <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">${visited.length}%達成</div>
+      <div style="font-size:11px; color:var(--accent); margin-top:8px; font-family:'SF Mono','JetBrains Mono',monospace; letter-spacing:0.15em;">${visited.length}% COMPLETE</div>
     </div>
 
     ${recent.length > 0 ? `
     <div class="stats-section">
-      <h3>最 近 訪 れ た 滝</h3>
+      <h3>最 近 訪 れ た</h3>
       ${recent.map(f => {
         const v = getVisit(f.id);
-        return `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line-soft); cursor:pointer;" onclick="openSheet(${f.id})">
-          <span style="font-size:13px;">${f.name}</span>
-          <span style="font-size:11px; color:var(--ink-soft); font-feature-settings:'tnum';">${v.date}</span>
+        return `<div style="display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--line-soft); cursor:pointer;" onclick="openSheet(${f.id})">
+          <span style="font-size:13px; color:var(--text);">${f.name}</span>
+          <span style="font-size:10px; color:var(--text-mute); font-family:'SF Mono','JetBrains Mono',monospace; letter-spacing:0.05em;">${v.date}</span>
         </div>`;
       }).join('')}
     </div>
     ` : ''}
 
     <div class="stats-section">
+      <h3>難 易 度 別</h3>
+      ${[1,2,3,4].map(lv => {
+        const total = FALLS.filter(f => f.difficulty === lv).length;
+        const vis = FALLS.filter(f => f.difficulty === lv && getVisit(f.id).visited).length;
+        return `
+          <div style="display:flex; align-items:center; gap:10px; padding:7px 0;">
+            <span style="font-size:12px; min-width:64px; color:var(--gold); letter-spacing:0.1em; text-shadow:0 0 6px rgba(255,184,77,0.3);">${DIFF_LABELS[lv].stars}</span>
+            <span style="font-size:11px; color:var(--text-soft); flex:1;">${DIFF_LABELS[lv].text.split('（')[0]}</span>
+            <div style="flex:1; max-width:120px; height:3px; background:var(--line-soft); border-radius:2px; overflow:hidden;">
+              <div style="height:100%; width:${total ? (vis/total*100) : 0}%; background:var(--accent); box-shadow:0 0 6px var(--accent-glow);"></div>
+            </div>
+            <span style="font-size:10px; color:var(--text-mute); font-family:'SF Mono','JetBrains Mono',monospace; min-width:40px; text-align:right;">${vis}/${total}</span>
+          </div>
+        `;
+      }).join('')}
+    </div>
+
+    <div class="stats-section">
       <h3>都 道 府 県 別</h3>
       ${sortedPrefs.map(([pref, s]) => `
         <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
-          <span style="font-size:12px; min-width:64px; color:var(--ink);">${pref}</span>
-          <div style="flex:1; height:4px; background:var(--line-soft); border-radius:2px; overflow:hidden;">
-            <div style="height:100%; width:${(s.visited/s.total*100)}%; background:${s.visited === s.total ? 'var(--gold)' : 'var(--ai)'};"></div>
+          <span style="font-size:12px; min-width:64px; color:var(--text);">${pref}</span>
+          <div style="flex:1; height:3px; background:var(--line-soft); border-radius:2px; overflow:hidden;">
+            <div style="height:100%; width:${(s.visited/s.total*100)}%; background:${s.visited === s.total ? 'var(--gold)' : 'var(--accent)'}; box-shadow:0 0 6px ${s.visited === s.total ? 'rgba(255,184,77,0.4)' : 'var(--accent-glow)'};"></div>
           </div>
-          <span style="font-size:11px; color:var(--ink-soft); font-feature-settings:'tnum'; min-width:36px; text-align:right;">${s.visited}/${s.total}</span>
+          <span style="font-size:10px; color:var(--text-mute); font-family:'SF Mono','JetBrains Mono',monospace; min-width:40px; text-align:right;">${s.visited}/${s.total}</span>
         </div>
       `).join('')}
     </div>
 
     <div class="stats-section">
       <h3>デ ー タ</h3>
-      <button class="menu-btn" onclick="exportData()" style="display:block; padding:8px 0; margin-bottom:4px;">記録をJSONで書き出し</button>
-      <button class="menu-btn" onclick="importData()" style="display:block; padding:8px 0;">記録を読み込み</button>
-      <button class="menu-btn" onclick="resetData()" style="display:block; padding:8px 0; color:var(--vermillion);">全データをリセット</button>
+      <button class="menu-btn" onclick="exportData()" style="display:block; padding:10px 0; width:100%; text-align:left;">↓ JSONで書き出し</button>
+      <button class="menu-btn" onclick="importData()" style="display:block; padding:10px 0; width:100%; text-align:left;">↑ JSONを読み込み</button>
+      <button class="menu-btn danger" onclick="resetData()" style="display:block; padding:10px 0; width:100%; text-align:left; color:var(--danger);">× 全データをリセット</button>
     </div>
   `;
 }
@@ -877,14 +1079,38 @@ function renderStats() {
 const sheet = document.getElementById('sheet');
 const backdrop = document.getElementById('backdrop');
 
+// 難易度の表示
+const DIFF_LABELS = {
+  1: { stars: '★', text: '楽勝（駐車場すぐ）' },
+  2: { stars: '★★', text: '軽め（遊歩道）' },
+  3: { stars: '★★★', text: 'ハイキング' },
+  4: { stars: '★★★★', text: '本格登山' }
+};
+function diffStars(level) {
+  return DIFF_LABELS[level] ? DIFF_LABELS[level].stars : '';
+}
+function diffFull(level) {
+  if (!DIFF_LABELS[level]) return '';
+  return `<span class="stars">${DIFF_LABELS[level].stars}</span>${DIFF_LABELS[level].text}`;
+}
+
 function openSheet(id) {
   currentId = id;
   const f = FALLS.find(x => x.id === id);
   const v = getVisit(id);
   document.getElementById('sheet-num').textContent = `№${String(f.id).padStart(3,'0')}`;
-  document.getElementById('sheet-title').textContent = f.name;
+  const titleEl = document.getElementById('sheet-title');
+  titleEl.textContent = f.name;
+  // Wikipedia検索URL（同名の滝も都道府県で曖昧さ解消）
+  const searchTerm = encodeURIComponent(f.name + ' ' + f.pref);
+  titleEl.href = `https://ja.wikipedia.org/wiki/Special:Search?search=${searchTerm}&go=Go`;
   document.getElementById('sheet-kana').textContent = f.kana;
   document.getElementById('sheet-loc').textContent = `${f.pref}　${f.city}`;
+  // 難易度
+  document.getElementById('sheet-difficulty').innerHTML = diffFull(f.difficulty);
+  // Googleマップ（座標で開く）
+  const mapBtn = document.getElementById('sheet-map-btn');
+  mapBtn.href = `https://www.google.com/maps/search/?api=1&query=${f.lat},${f.lng}&query_place_id=${encodeURIComponent(f.name)}`;
   document.getElementById('visit-toggle').classList.toggle('on', v.visited);
   document.getElementById('visit-date').value = v.date || '';
   document.getElementById('visit-memo').value = v.memo || '';
@@ -1065,8 +1291,8 @@ window.resetData = resetData;
 function showStorageWarning() {
   if (storageMode !== 'memory') return;
   const banner = document.createElement('div');
-  banner.style.cssText = 'background:#fdf6e3; border-bottom:1px solid var(--vermillion); color:var(--ink); padding:8px 12px; font-size:11px; text-align:center; line-height:1.4;';
-  banner.innerHTML = '⚠ 永続保存が利用できないため、記録はこのセッションのみ保持されます。「記録」タブから書き出してバックアップしてください。';
+  banner.style.cssText = 'background:rgba(255,77,109,0.1); border-bottom:1px solid var(--danger); color:var(--text); padding:8px 12px; font-size:11px; text-align:center; line-height:1.4;';
+  banner.innerHTML = '⚠ 永続保存が利用できません。「STATS」タブから書き出してバックアップしてください。';
   document.querySelector('header').after(banner);
 }
 
