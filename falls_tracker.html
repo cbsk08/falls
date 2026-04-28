@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>滝百選</title>
+<!-- iOS PWA設定 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="滝百選">
+<meta name="theme-color" content="#f5f2ea">
+<!-- アイコン（SVG埋め込み・墨色の「瀧」） -->
+<link rel="apple-touch-icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='32' fill='%23f5f2ea'/><text x='90' y='128' font-family='serif' font-size='128' text-anchor='middle' fill='%231e3a5f'>瀧</text></svg>">
+<link rel="icon" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='32' fill='%23f5f2ea'/><text x='90' y='128' font-family='serif' font-size='128' text-anchor='middle' fill='%231e3a5f'>瀧</text></svg>">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+  :root {
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --paper: #f5f2ea;
+    --paper-deep: #ebe6da;
+    --sumi: #2c3e50;
+    --ai: #1e3a5f;
+    --ai-light: #2c5282;
+    --vermillion: #c44536;
+    --gold: #b8893a;
+    --line: #d4cfc0;
+    --line-soft: #e5e0d2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "ヒラギノ明朝 Pro", serif;
+    color: var(--ink);
+    background: var(--paper);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-tap-highlight-color: transparent;
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  /* ヘッダー */
+  header {
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 10px 16px 8px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 10;
+  }
+  .title-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  h1 {
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    color: var(--ink);
+  }
+  h1::before {
+    content: "瀧";
+    font-size: 20px;
+    color: var(--ai);
+    margin-right: 6px;
+    vertical-align: -2px;
+  }
+  .progress {
+    font-feature-settings: "tnum";
+    font-size: 13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.04em;
+  }
+  .progress strong {
+    color: var(--ai);
+    font-weight: 600;
+    font-size: 17px;
+  }
+  .progress-bar {
+    margin-top: 6px;
+    height: 2px;
+    background: var(--line-soft);
+    overflow: hidden;
+    border-radius: 1px;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: var(--ai);
+    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* タブ */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-top: 8px;
+    border-bottom: 1px solid transparent;
+  }
+  .tab {
+    flex: 1;
+    padding: 8px 0;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--ink-soft);
+    background: none;
+    border: none;
+    border-bottom: 1.5px solid transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .tab.active {
+    color: var(--ink);
+    border-bottom-color: var(--ai);
+  }
+
+  /* メインエリア */
+  main {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+  }
+  .view {
+    position: absolute;
+    inset: 0;
+    display: none;
+  }
+  .view.active { display: block; }
+
+  /* 地図 */
+  #map {
+    width: 100%;
+    height: 100%;
+    background: var(--paper-deep);
+  }
+  .leaflet-container { font-family: inherit; background: var(--paper-deep); }
+
+  /* マーカー */
+  .pin {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    display: block;
+    transition: transform 0.15s;
+  }
+  .pin.unvisited { background: var(--ink-soft); opacity: 0.7; }
+  .pin.visited { background: var(--ai); }
+  .pin.visited::after {
+    content: "";
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 6px; height: 10px;
+    border: solid #fff;
+    border-width: 0 1.5px 1.5px 0;
+    transform: translate(-55%, -65%) rotate(45deg);
+  }
+  .leaflet-marker-icon:hover .pin { transform: scale(1.15); }
+
+  /* リストビュー */
+  .list-view {
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    height: 100%;
+    background: var(--paper);
+  }
+  .filter-bar {
+    position: sticky;
+    top: 0;
+    background: var(--paper);
+    border-bottom: 1px solid var(--line);
+    padding: 8px 12px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    z-index: 5;
+  }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .chip {
+    flex-shrink: 0;
+    padding: 5px 12px;
+    font-size: 12px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    color: var(--ink-soft);
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.05em;
+    transition: all 0.15s;
+  }
+  .chip.active {
+    background: var(--ink);
+    color: var(--paper);
+    border-color: var(--ink);
+  }
+  .list-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--line-soft);
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .list-item:active { background: var(--paper-deep); }
+  .check-circle {
+    flex-shrink: 0;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    border: 1.5px solid var(--line);
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s;
+  }
+  .check-circle.visited {
+    background: var(--ai);
+    border-color: var(--ai);
+  }
+  .check-circle.visited::after {
+    content: "";
+    width: 5px; height: 9px;
+    border: solid #fff;
+    border-width: 0 1.5px 1.5px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .list-item-body { flex: 1; min-width: 0; }
+  .list-item-name {
+    font-size: 15px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .list-item-meta {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+  .list-item-num {
+    font-size: 11px;
+    color: var(--gold);
+    font-feature-settings: "tnum";
+    margin-right: 6px;
+  }
+  .photo-mini {
+    width: 36px; height: 36px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid var(--line);
+  }
+
+  /* ボトムシート（詳細） */
+  .sheet-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(26,26,26,0.4);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+  .sheet-backdrop.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .sheet {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: var(--paper);
+    border-radius: 12px 12px 0 0;
+    z-index: 1001;
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 88vh;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+  }
+  .sheet.open { transform: translateY(0); }
+  .sheet-handle {
+    width: 32px; height: 3px;
+    background: var(--line);
+    border-radius: 2px;
+    margin: 8px auto 4px;
+    flex-shrink: 0;
+  }
+  .sheet-header {
+    padding: 8px 16px 12px;
+    border-bottom: 1px solid var(--line-soft);
+    flex-shrink: 0;
+  }
+  .sheet-num {
+    font-size: 11px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    font-feature-settings: "tnum";
+  }
+  .sheet-title {
+    font-size: 19px;
+    font-weight: 500;
+    margin: 2px 0 4px;
+    letter-spacing: 0.04em;
+  }
+  .sheet-kana {
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+  }
+  .sheet-loc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
+  }
+  .sheet-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .toggle-label {
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .toggle {
+    position: relative;
+    width: 44px; height: 24px;
+    background: var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .toggle.on { background: var(--ai); }
+  .toggle::after {
+    content: "";
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .toggle.on::after { transform: translateX(20px); }
+
+  .field-label {
+    display: block;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.1em;
+    margin: 14px 0 6px;
+  }
+  input[type="date"], textarea {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--line);
+    background: var(--paper);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--ink);
+    resize: vertical;
+  }
+  input[type="date"]:focus, textarea:focus {
+    outline: none;
+    border-color: var(--ai);
+  }
+  textarea { min-height: 70px; }
+
+  .photos {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .photo-cell {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--paper-deep);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .photo-cell img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .photo-del {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    background: rgba(26,26,26,0.7);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    font-size: 14px;
+    cursor: pointer;
+    line-height: 1;
+    padding: 0;
+  }
+  .photo-add {
+    aspect-ratio: 1;
+    border: 1.5px dashed var(--line);
+    background: var(--paper);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink-soft);
+    font-size: 24px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .photo-add:active { background: var(--paper-deep); }
+  .photo-input { display: none; }
+
+  .save-bar {
+    padding: 12px 16px;
+    border-top: 1px solid var(--line-soft);
+    background: var(--paper);
+    flex-shrink: 0;
+  }
+  .save-btn {
+    width: 100%;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+  }
+  .save-btn:active { background: var(--sumi); }
+
+  /* ポップアップ */
+  .leaflet-popup-content-wrapper {
+    border-radius: 4px;
+    background: var(--paper);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  }
+  .leaflet-popup-content { margin: 10px 12px; font-family: inherit; font-size: 13px; }
+  .leaflet-popup-tip { background: var(--paper); }
+  .popup-name { font-weight: 500; margin-bottom: 2px; }
+  .popup-loc { font-size: 11px; color: var(--ink-soft); }
+  .popup-btn {
+    margin-top: 6px;
+    padding: 4px 10px;
+    background: var(--ink);
+    color: var(--paper);
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+  }
+
+  /* 統計セクション */
+  .stats-section {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line-soft);
+  }
+  .stats-section h3 {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-soft);
+    font-weight: 400;
+    margin-bottom: 8px;
+  }
+  /* メニューボタン */
+  .menu-btn {
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 0;
+    letter-spacing: 0.1em;
+  }
+  .menu-btn:hover { color: var(--vermillion); }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="title-row">
+      <h1>日本の滝百選</h1>
+      <div class="progress">
+        <strong id="visited-count">0</strong> <span style="opacity:0.5">/</span> 100
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-bar-fill" id="progress-fill" style="width:0%"></div></div>
+    <div class="tabs">
+      <button class="tab active" data-view="map">地 図</button>
+      <button class="tab" data-view="list">一 覧</button>
+      <button class="tab" data-view="stats">記 録</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="view active" id="view-map">
+      <div id="map"></div>
+    </div>
+
+    <div class="view" id="view-list">
+      <div class="list-view">
+        <div class="filter-bar" id="filter-bar"></div>
+        <div id="list-container"></div>
+      </div>
+    </div>
+
+    <div class="view" id="view-stats">
+      <div class="list-view" style="padding: 16px;">
+        <div id="stats-content"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 詳細シート -->
+<div class="sheet-backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-header">
+    <div class="sheet-num" id="sheet-num"></div>
+    <div class="sheet-title" id="sheet-title"></div>
+    <div class="sheet-kana" id="sheet-kana"></div>
+    <div class="sheet-loc" id="sheet-loc"></div>
+  </div>
+  <div class="sheet-body">
+    <div class="toggle-row">
+      <span class="toggle-label">訪問済</span>
+      <div class="toggle" id="visit-toggle"></div>
+    </div>
+    <label class="field-label">訪問日</label>
+    <input type="date" id="visit-date">
+    <label class="field-label">メモ</label>
+    <textarea id="visit-memo" placeholder="思い出、アクセス情報、感想など"></textarea>
+    <label class="field-label">写真</label>
+    <div class="photos" id="photos-grid"></div>
+    <input type="file" class="photo-input" id="photo-input" accept="image/*" multiple>
+  </div>
+  <div class="save-bar">
+    <button class="save-btn" id="save-btn">保 存</button>
+  </div>
+</div>
+
+<script>
+// Leafletが読み込めなかった場合のエラー表示
+if (typeof L === 'undefined') {
+  document.body.innerHTML = '<div style="padding:20px; font-family:sans-serif;">地図ライブラリ（Leaflet）が読み込めませんでした。ネットワーク接続を確認してリロードしてください。</div>';
+  throw new Error('Leaflet not loaded');
+}
+
+const FALLS = [{"id": 1, "name": "羽衣の滝", "kana": "はごろものたき", "pref": "北海道", "city": "上川郡東川町", "lat": 43.6539, "lng": 142.8569}, {"id": 2, "name": "飛竜 賀老の滝", "kana": "ひりゅう がろうのたき", "pref": "北海道", "city": "島牧郡島牧村", "lat": 42.6986, "lng": 140.0744}, {"id": 3, "name": "インクラの滝", "kana": "いんくらのたき", "pref": "北海道", "city": "白老郡白老町", "lat": 42.5839, "lng": 141.2531}, {"id": 4, "name": "流星・銀河の滝", "kana": "りゅうせい・ぎんがのたき", "pref": "北海道", "city": "上川郡上川町", "lat": 43.7242, "lng": 142.9047}, {"id": 5, "name": "アシリベツの滝", "kana": "あしりべつのたき", "pref": "北海道", "city": "札幌市南区", "lat": 42.9886, "lng": 141.4078}, {"id": 6, "name": "オシンコシンの滝", "kana": "おしんこしんのたき", "pref": "北海道", "city": "斜里郡斜里町", "lat": 44.0583, "lng": 144.9056}, {"id": 7, "name": "松見の滝", "kana": "まつみのたき", "pref": "青森県", "city": "十和田市", "lat": 40.5197, "lng": 140.9636}, {"id": 8, "name": "くろくまの滝", "kana": "くろくまのたき", "pref": "青森県", "city": "西津軽郡鯵ヶ沢町", "lat": 40.6789, "lng": 140.1569}, {"id": 9, "name": "不動の滝", "kana": "ふどうのたき", "pref": "岩手県", "city": "八幡平市", "lat": 39.9625, "lng": 141.0764}, {"id": 10, "name": "秋保大滝", "kana": "あきうおおたき", "pref": "宮城県", "city": "仙台市太白区", "lat": 38.2628, "lng": 140.6708}, {"id": 11, "name": "三階の滝", "kana": "さんかいのたき", "pref": "宮城県", "city": "刈田郡蔵王町", "lat": 38.1283, "lng": 140.5375}, {"id": 12, "name": "茶釜の滝", "kana": "ちゃがまのたき", "pref": "秋田県", "city": "鹿角市", "lat": 40.0708, "lng": 140.8056}, {"id": 13, "name": "法体の滝", "kana": "ほったいのたき", "pref": "秋田県", "city": "由利本荘市", "lat": 39.1858, "lng": 140.2483}, {"id": 14, "name": "安の滝", "kana": "やすのたき", "pref": "秋田県", "city": "北秋田市", "lat": 39.9889, "lng": 140.5328}, {"id": 15, "name": "七滝", "kana": "ななたき", "pref": "秋田県", "city": "鹿角郡小坂町", "lat": 40.4097, "lng": 140.7686}, {"id": 16, "name": "七ツ滝", "kana": "ななつたき", "pref": "山形県", "city": "鶴岡市", "lat": 38.6233, "lng": 139.9189}, {"id": 17, "name": "滑川大滝", "kana": "なめがわおおたき", "pref": "山形県", "city": "米沢市", "lat": 37.9281, "lng": 140.1558}, {"id": 18, "name": "白糸の滝", "kana": "しらいとのたき", "pref": "山形県", "city": "最上郡戸沢村", "lat": 38.7256, "lng": 140.0394}, {"id": 19, "name": "乙字ケ滝", "kana": "おつじがたき", "pref": "福島県", "city": "須賀川市", "lat": 37.2992, "lng": 140.3825}, {"id": 20, "name": "銚子ケ滝", "kana": "ちょうしがたき", "pref": "福島県", "city": "郡山市", "lat": 37.5814, "lng": 140.2628}, {"id": 21, "name": "三条の滝", "kana": "さんじょうのたき", "pref": "福島県", "city": "南会津郡檜枝岐村", "lat": 36.9483, "lng": 139.2261}, {"id": 22, "name": "袋田の滝", "kana": "ふくろだのたき", "pref": "茨城県", "city": "久慈郡大子町", "lat": 36.7689, "lng": 140.4111}, {"id": 23, "name": "華厳の滝", "kana": "けごんのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7397, "lng": 139.5031}, {"id": 24, "name": "霧降の滝", "kana": "きりふりのたき", "pref": "栃木県", "city": "日光市", "lat": 36.7656, "lng": 139.6356}, {"id": 25, "name": "棚下の不動滝", "kana": "たなしたのふどうたき", "pref": "群馬県", "city": "渋川市", "lat": 36.595, "lng": 139.0589}, {"id": 26, "name": "吹割の滝", "kana": "ふきわれのたき", "pref": "群馬県", "city": "沼田市", "lat": 36.7417, "lng": 139.2458}, {"id": 27, "name": "常布の滝", "kana": "じょうふのたき", "pref": "群馬県", "city": "吾妻郡草津町", "lat": 36.6428, "lng": 138.5481}, {"id": 28, "name": "丸神の滝", "kana": "まるがみのたき", "pref": "埼玉県", "city": "秩父郡小鹿野町", "lat": 36.0186, "lng": 138.9136}, {"id": 29, "name": "払沢の滝", "kana": "ほっさわのたき", "pref": "東京都", "city": "西多摩郡檜原村", "lat": 35.7497, "lng": 139.1583}, {"id": 30, "name": "早戸大滝", "kana": "はやとおおたき", "pref": "神奈川県", "city": "相模原市", "lat": 35.5497, "lng": 139.1644}, {"id": 31, "name": "洒水の滝", "kana": "しゃすいのたき", "pref": "神奈川県", "city": "足柄上郡山北町", "lat": 35.3508, "lng": 139.0822}, {"id": 32, "name": "七ツ釜五段の滝", "kana": "ななつがまごだんのたき", "pref": "山梨県", "city": "山梨市", "lat": 35.7986, "lng": 138.7144}, {"id": 33, "name": "仙娥滝", "kana": "せんがたき", "pref": "山梨県", "city": "甲府市", "lat": 35.7158, "lng": 138.5497}, {"id": 34, "name": "北精進ケ滝", "kana": "きたしょうじがたき", "pref": "山梨県", "city": "北杜市", "lat": 35.7531, "lng": 138.4011}, {"id": 35, "name": "鈴ヶ滝", "kana": "すずがたき", "pref": "新潟県", "city": "村上市", "lat": 38.4794, "lng": 139.5739}, {"id": 36, "name": "苗名滝", "kana": "なえなたき", "pref": "新潟県", "city": "妙高市", "lat": 36.865, "lng": 138.1283}, {"id": 37, "name": "惣滝", "kana": "そうたき", "pref": "新潟県", "city": "妙高市", "lat": 36.8961, "lng": 138.145}, {"id": 38, "name": "称名滝", "kana": "しょうみょうだき", "pref": "富山県", "city": "中新川郡立山町", "lat": 36.5736, "lng": 137.4919}, {"id": 39, "name": "姥ケ滝", "kana": "うばがたき", "pref": "石川県", "city": "白山市", "lat": 36.2089, "lng": 136.7394}, {"id": 40, "name": "龍双ケ滝", "kana": "りゅうそうがたき", "pref": "福井県", "city": "今立郡池田町", "lat": 35.8089, "lng": 136.5469}, {"id": 41, "name": "米子大瀑布", "kana": "よなこだいばくふ", "pref": "長野県", "city": "須坂市", "lat": 36.5614, "lng": 138.4961}, {"id": 42, "name": "三本滝", "kana": "さんぼんだき", "pref": "長野県", "city": "松本市", "lat": 36.1119, "lng": 137.6228}, {"id": 43, "name": "田立の滝", "kana": "ただちのたき", "pref": "長野県", "city": "木曽郡南木曽町", "lat": 35.6253, "lng": 137.5961}, {"id": 44, "name": "平湯大滝", "kana": "ひらゆおおたき", "pref": "岐阜県", "city": "高山市", "lat": 36.1556, "lng": 137.5631}, {"id": 45, "name": "養老の滝", "kana": "ようろうのたき", "pref": "岐阜県", "city": "養老郡養老町", "lat": 35.2856, "lng": 136.5494}, {"id": 46, "name": "根尾の滝", "kana": "ねおのたき", "pref": "岐阜県", "city": "下呂市", "lat": 35.9022, "lng": 137.4978}, {"id": 47, "name": "阿弥陀ケ滝", "kana": "あみだがたき", "pref": "岐阜県", "city": "郡上市", "lat": 35.9622, "lng": 136.8364}, {"id": 48, "name": "安倍の大滝", "kana": "あべのおおたき", "pref": "静岡県", "city": "静岡市葵区", "lat": 35.2517, "lng": 138.3119}, {"id": 49, "name": "浄蓮の滝", "kana": "じょうれんのたき", "pref": "静岡県", "city": "伊豆市", "lat": 34.8775, "lng": 138.9292}, {"id": 50, "name": "白糸の滝・音止の滝", "kana": "しらいとのたき・おとどめのたき", "pref": "静岡県", "city": "富士宮市", "lat": 35.3061, "lng": 138.5856}, {"id": 51, "name": "阿寺の七滝", "kana": "あてらのななたき", "pref": "愛知県", "city": "新城市", "lat": 35.0989, "lng": 137.5828}, {"id": 52, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "三重県", "city": "熊野市", "lat": 33.9344, "lng": 136.0806}, {"id": 53, "name": "赤目四十八滝", "kana": "あかめしじゅうはちたき", "pref": "三重県", "city": "名張市", "lat": 34.5694, "lng": 136.1042}, {"id": 54, "name": "七ツ釜滝", "kana": "ななつがまだき", "pref": "三重県", "city": "多気郡大台町", "lat": 34.1867, "lng": 136.0694}, {"id": 55, "name": "八ツ淵の滝", "kana": "やつぶちのたき", "pref": "滋賀県", "city": "高島市", "lat": 35.3808, "lng": 136.0286}, {"id": 56, "name": "金引の滝", "kana": "かなびきのたき", "pref": "京都府", "city": "宮津市", "lat": 35.5681, "lng": 135.1844}, {"id": 57, "name": "箕面滝", "kana": "みのおのたき", "pref": "大阪府", "city": "箕面市", "lat": 34.8503, "lng": 135.4728}, {"id": 58, "name": "猿尾滝", "kana": "さるおだき", "pref": "兵庫県", "city": "美方郡香美町", "lat": 35.4569, "lng": 134.5083}, {"id": 59, "name": "天滝", "kana": "てんだき", "pref": "兵庫県", "city": "養父市", "lat": 35.2828, "lng": 134.6511}, {"id": 60, "name": "原不動滝", "kana": "はらふどうたき", "pref": "兵庫県", "city": "宍粟市", "lat": 35.1583, "lng": 134.5331}, {"id": 61, "name": "布引の滝", "kana": "ぬのびきのたき", "pref": "兵庫県", "city": "神戸市中央区", "lat": 34.7144, "lng": 135.1972}, {"id": 62, "name": "双門の滝", "kana": "そうもんのたき", "pref": "奈良県", "city": "吉野郡天川村", "lat": 34.2358, "lng": 135.8642}, {"id": 63, "name": "不動七重の滝", "kana": "ふどうななえのたき", "pref": "奈良県", "city": "吉野郡下北山村", "lat": 34.0422, "lng": 135.8353}, {"id": 64, "name": "笹の滝", "kana": "ささのたき", "pref": "奈良県", "city": "吉野郡十津川村", "lat": 33.9489, "lng": 135.7981}, {"id": 65, "name": "中の滝", "kana": "なかのたき", "pref": "奈良県", "city": "吉野郡上北山村", "lat": 34.1825, "lng": 135.9486}, {"id": 66, "name": "桑ノ木の滝", "kana": "くわのきのたき", "pref": "和歌山県", "city": "新宮市", "lat": 33.8561, "lng": 135.7314}, {"id": 67, "name": "八草の滝", "kana": "はっそうのたき", "pref": "和歌山県", "city": "西牟婁郡白浜町", "lat": 33.725, "lng": 135.4514}, {"id": 68, "name": "那智滝", "kana": "なちのたき", "pref": "和歌山県", "city": "東牟婁郡那智勝浦町", "lat": 33.67, "lng": 135.8908}, {"id": 69, "name": "雨滝", "kana": "あめだき", "pref": "鳥取県", "city": "鳥取市", "lat": 35.4364, "lng": 134.3628}, {"id": 70, "name": "大山滝", "kana": "だいせんだき", "pref": "鳥取県", "city": "東伯郡琴浦町", "lat": 35.3447, "lng": 133.5961}, {"id": 71, "name": "壇鏡の滝", "kana": "だんぎょうのたき", "pref": "島根県", "city": "隠岐郡隠岐の島町", "lat": 36.2117, "lng": 133.25}, {"id": 72, "name": "龍頭八重滝", "kana": "りゅうずやえだき", "pref": "島根県", "city": "雲南市", "lat": 35.345, "lng": 132.8847}, {"id": 73, "name": "神庭の滝", "kana": "かんばのたき", "pref": "岡山県", "city": "真庭市", "lat": 35.0797, "lng": 133.6203}, {"id": 74, "name": "常清滝", "kana": "じょうせいだき", "pref": "広島県", "city": "三次市", "lat": 34.7917, "lng": 132.8333}, {"id": 75, "name": "寂地峡五竜の滝", "kana": "じゃくちきょうごりゅうのたき", "pref": "山口県", "city": "岩国市", "lat": 34.4611, "lng": 132.1144}, {"id": 76, "name": "大釜の滝", "kana": "おおがまのたき", "pref": "徳島県", "city": "那賀郡那賀町", "lat": 33.8606, "lng": 134.2261}, {"id": 77, "name": "轟九十九滝", "kana": "とどろきくじゅうくたき", "pref": "徳島県", "city": "海部郡海陽町", "lat": 33.7019, "lng": 134.4361}, {"id": 78, "name": "雨乞の滝", "kana": "あまごいのたき", "pref": "徳島県", "city": "名西郡神山町", "lat": 33.9758, "lng": 134.3542}, {"id": 79, "name": "雪輪の滝", "kana": "ゆきわのたき", "pref": "愛媛県", "city": "宇和島市", "lat": 33.4194, "lng": 132.6647}, {"id": 80, "name": "御来光の滝", "kana": "ごらいこうのたき", "pref": "愛媛県", "city": "上浮穴郡久万高原町", "lat": 33.7689, "lng": 133.1408}, {"id": 81, "name": "龍王の滝", "kana": "りゅうおうのたき", "pref": "高知県", "city": "長岡郡大豊町", "lat": 33.765, "lng": 133.6772}, {"id": 82, "name": "轟の滝", "kana": "とどろのたき", "pref": "高知県", "city": "香美市", "lat": 33.5806, "lng": 133.7044}, {"id": 83, "name": "大樽の滝", "kana": "おおたるのたき", "pref": "高知県", "city": "高岡郡越知町", "lat": 33.5022, "lng": 133.0017}, {"id": 84, "name": "観音の滝", "kana": "かんのんのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.4561, "lng": 129.9197}, {"id": 85, "name": "見帰りの滝", "kana": "みかえりのたき", "pref": "佐賀県", "city": "唐津市", "lat": 33.3914, "lng": 129.9911}, {"id": 86, "name": "四十三万滝", "kana": "しじゅうさんまんたき", "pref": "熊本県", "city": "菊池市", "lat": 33.0139, "lng": 130.9422}, {"id": 87, "name": "栴檀轟の滝", "kana": "せんだんとどろのたき", "pref": "熊本県", "city": "八代市泉町", "lat": 32.4761, "lng": 131.0419}, {"id": 88, "name": "鹿目の滝", "kana": "かなめのたき", "pref": "熊本県", "city": "人吉市", "lat": 32.1989, "lng": 130.7619}, {"id": 89, "name": "数鹿流ヶ滝", "kana": "すがるがたき", "pref": "熊本県", "city": "阿蘇郡南阿蘇村", "lat": 32.8889, "lng": 131.0083}, {"id": 90, "name": "原尻の滝", "kana": "はらじりのたき", "pref": "大分県", "city": "豊後大野市", "lat": 32.9869, "lng": 131.4658}, {"id": 91, "name": "震動の滝", "kana": "しんどうのたき", "pref": "大分県", "city": "玖珠郡九重町", "lat": 33.0967, "lng": 131.2533}, {"id": 92, "name": "東椎屋の滝", "kana": "ひがししいやのたき", "pref": "大分県", "city": "宇佐市安心院町", "lat": 33.4719, "lng": 131.4458}, {"id": 93, "name": "西椎屋の滝", "kana": "にししいやのたき", "pref": "大分県", "city": "玖珠郡玖珠町", "lat": 33.3978, "lng": 131.3367}, {"id": 94, "name": "関之尾滝", "kana": "せきのおのたき", "pref": "宮崎県", "city": "都城市", "lat": 31.7361, "lng": 131.0011}, {"id": 95, "name": "矢研の滝", "kana": "やとぎのたき", "pref": "宮崎県", "city": "児湯郡都農町", "lat": 32.4175, "lng": 131.4189}, {"id": 96, "name": "真名井の滝", "kana": "まないのたき", "pref": "宮崎県", "city": "西臼杵郡高千穂町", "lat": 32.71, "lng": 131.3072}, {"id": 97, "name": "行縢の滝", "kana": "むかばきのたき", "pref": "宮崎県", "city": "延岡市", "lat": 32.6044, "lng": 131.5489}, {"id": 98, "name": "龍門滝", "kana": "りゅうもんのたき", "pref": "鹿児島県", "city": "姶良市加治木町", "lat": 31.7361, "lng": 130.6258}, {"id": 99, "name": "大川の滝", "kana": "おおこのたき", "pref": "鹿児島県", "city": "熊毛郡屋久島町", "lat": 30.3447, "lng": 130.4242}, {"id": 100, "name": "マリユドゥの滝", "kana": "まりゆどぅのたき", "pref": "沖縄県", "city": "八重山郡竹富町", "lat": 24.3486, "lng": 123.8497}];
+
+// ===== 状態管理 =====
+let visits = {}; // {id: {visited:bool, date:'YYYY-MM-DD', memo:'', photos:[base64...]}}
+let currentId = null;
+let currentFilter = 'all';
+let markers = {};
+let db = null;
+let storageMode = 'memory'; // 'idb' | 'memory'
+
+// ===== IndexedDB =====
+const DB_NAME = 'falls_tracker';
+const DB_VERSION = 1;
+const STORE = 'visits';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    if (!('indexedDB' in window)) { reject(new Error('IndexedDB unsupported')); return; }
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onerror = () => reject(req.error);
+    req.onsuccess = () => resolve(req.result);
+    req.onupgradeneeded = (e) => {
+      const d = e.target.result;
+      if (!d.objectStoreNames.contains(STORE)) {
+        d.createObjectStore(STORE, { keyPath: 'id' });
+      }
+    };
+  });
+}
+
+function idbGet(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).get(id);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbGetAll() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbPut(record) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).put(record);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbDelete(id) {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+function idbClear() {
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).clear();
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function initStorage() {
+  try {
+    db = await openDB();
+    storageMode = 'idb';
+    // ストレージの永続化をリクエスト（iOS Safariはストレージ圧迫時にデータを消すため）
+    if (navigator.storage && navigator.storage.persist) {
+      try { await navigator.storage.persist(); } catch(e) {}
+    }
+  } catch(e) {
+    console.warn('IndexedDB使用不可、メモリモードに切替:', e);
+    storageMode = 'memory';
+  }
+}
+
+async function loadData() {
+  if (storageMode !== 'idb') return;
+  try {
+    const all = await idbGetAll();
+    for (const r of all) {
+      visits[r.id] = {
+        visited: r.visited || false,
+        date: r.date || '',
+        memo: r.memo || '',
+        photos: r.photos || []
+      };
+    }
+  } catch(e) {
+    console.error('読込エラー:', e);
+  }
+}
+
+async function saveVisit(id) {
+  if (storageMode !== 'idb') return { ok: true };
+  try {
+    const v = visits[id];
+    if (!v) {
+      await idbDelete(id);
+    } else {
+      await idbPut({
+        id: id,
+        visited: v.visited,
+        date: v.date,
+        memo: v.memo,
+        photos: v.photos || []
+      });
+    }
+    return { ok: true };
+  } catch(e) {
+    console.error('保存エラー:', e);
+    return { ok: false, error: e.message || String(e) };
+  }
+}
+
+function getVisit(id) {
+  return visits[id] || { visited: false, date: '', memo: '', photos: [] };
+}
+
+// ===== 地図初期化 =====
+const map = L.map('map', {
+  center: [37.5, 137.5],
+  zoom: 5,
+  zoomControl: true,
+  attributionControl: true
+});
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap',
+  maxZoom: 18
+}).addTo(map);
+
+function makeIcon(visited) {
+  return L.divIcon({
+    className: '',
+    html: `<span class="pin ${visited ? 'visited' : 'unvisited'}"></span>`,
+    iconSize: [22, 22],
+    iconAnchor: [11, 11]
+  });
+}
+
+function renderMarkers() {
+  Object.values(markers).forEach(m => map.removeLayer(m));
+  markers = {};
+  FALLS.forEach(f => {
+    const v = getVisit(f.id);
+    const marker = L.marker([f.lat, f.lng], { icon: makeIcon(v.visited) }).addTo(map);
+    marker.bindPopup(`
+      <div class="popup-name">${f.name}</div>
+      <div class="popup-loc">${f.pref} ${f.city}</div>
+      <button class="popup-btn" onclick="openSheet(${f.id})">詳 細</button>
+    `);
+    markers[f.id] = marker;
+  });
+}
+
+// ===== タブ切り替え =====
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('view-' + btn.dataset.view).classList.add('active');
+    if (btn.dataset.view === 'map') {
+      setTimeout(() => map.invalidateSize(), 50);
+    }
+    if (btn.dataset.view === 'list') renderList();
+    if (btn.dataset.view === 'stats') renderStats();
+  });
+});
+
+// ===== リストビュー =====
+function renderFilterChips() {
+  const prefs = [...new Set(FALLS.map(f => f.pref))];
+  const bar = document.getElementById('filter-bar');
+  const items = [
+    { key: 'all', label: '全て' },
+    { key: 'visited', label: '訪問済' },
+    { key: 'unvisited', label: '未訪問' },
+    ...prefs.map(p => ({ key: 'pref:' + p, label: p }))
+  ];
+  bar.innerHTML = items.map(it =>
+    `<button class="chip ${currentFilter === it.key ? 'active' : ''}" data-key="${it.key}">${it.label}</button>`
+  ).join('');
+  bar.querySelectorAll('.chip').forEach(c => {
+    c.addEventListener('click', () => {
+      currentFilter = c.dataset.key;
+      renderFilterChips();
+      renderListItems();
+    });
+  });
+}
+
+function renderListItems() {
+  const container = document.getElementById('list-container');
+  let items = FALLS.slice();
+  if (currentFilter === 'visited') items = items.filter(f => getVisit(f.id).visited);
+  else if (currentFilter === 'unvisited') items = items.filter(f => !getVisit(f.id).visited);
+  else if (currentFilter.startsWith('pref:')) {
+    const p = currentFilter.slice(5);
+    items = items.filter(f => f.pref === p);
+  }
+  container.innerHTML = items.map(f => {
+    const v = getVisit(f.id);
+    const photo = v.photos && v.photos[0] ? `<img class="photo-mini" src="${v.photos[0]}">` : '';
+    return `
+      <div class="list-item" data-id="${f.id}">
+        <div class="check-circle ${v.visited ? 'visited' : ''}"></div>
+        <div class="list-item-body">
+          <div class="list-item-name"><span class="list-item-num">№${String(f.id).padStart(3,'0')}</span>${f.name}</div>
+          <div class="list-item-meta">${f.pref}　${f.city}</div>
+        </div>
+        ${photo}
+      </div>
+    `;
+  }).join('');
+  container.querySelectorAll('.list-item').forEach(el => {
+    el.addEventListener('click', () => openSheet(parseInt(el.dataset.id)));
+  });
+}
+
+function renderList() {
+  renderFilterChips();
+  renderListItems();
+}
+
+// ===== 統計ビュー =====
+function renderStats() {
+  const visited = FALLS.filter(f => getVisit(f.id).visited);
+  const prefMap = {};
+  FALLS.forEach(f => {
+    if (!prefMap[f.pref]) prefMap[f.pref] = { total: 0, visited: 0 };
+    prefMap[f.pref].total++;
+    if (getVisit(f.id).visited) prefMap[f.pref].visited++;
+  });
+  const sortedPrefs = Object.entries(prefMap).sort((a,b) => b[1].visited - a[1].visited || a[0].localeCompare(b[0],'ja'));
+
+  // 最近の訪問
+  const recent = visited
+    .filter(f => getVisit(f.id).date)
+    .sort((a,b) => getVisit(b.id).date.localeCompare(getVisit(a.id).date))
+    .slice(0, 5);
+
+  const c = document.getElementById('stats-content');
+  c.innerHTML = `
+    <div class="stats-section" style="margin-top:0; padding-top:0; border-top:none;">
+      <h3>達 成 状 況</h3>
+      <div style="font-size:32px; font-feature-settings:'tnum'; color:var(--ink); letter-spacing:0.04em;">
+        ${visited.length}<span style="font-size:16px; color:var(--ink-soft); margin-left:4px;">/ 100</span>
+      </div>
+      <div style="font-size:11px; color:var(--ink-soft); margin-top:4px;">${visited.length}%達成</div>
+    </div>
+
+    ${recent.length > 0 ? `
+    <div class="stats-section">
+      <h3>最 近 訪 れ た 滝</h3>
+      ${recent.map(f => {
+        const v = getVisit(f.id);
+        return `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line-soft); cursor:pointer;" onclick="openSheet(${f.id})">
+          <span style="font-size:13px;">${f.name}</span>
+          <span style="font-size:11px; color:var(--ink-soft); font-feature-settings:'tnum';">${v.date}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    ` : ''}
+
+    <div class="stats-section">
+      <h3>都 道 府 県 別</h3>
+      ${sortedPrefs.map(([pref, s]) => `
+        <div style="display:flex; align-items:center; gap:10px; padding:6px 0;">
+          <span style="font-size:12px; min-width:64px; color:var(--ink);">${pref}</span>
+          <div style="flex:1; height:4px; background:var(--line-soft); border-radius:2px; overflow:hidden;">
+            <div style="height:100%; width:${(s.visited/s.total*100)}%; background:${s.visited === s.total ? 'var(--gold)' : 'var(--ai)'};"></div>
+          </div>
+          <span style="font-size:11px; color:var(--ink-soft); font-feature-settings:'tnum'; min-width:36px; text-align:right;">${s.visited}/${s.total}</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="stats-section">
+      <h3>デ ー タ</h3>
+      <button class="menu-btn" onclick="exportData()" style="display:block; padding:8px 0; margin-bottom:4px;">記録をJSONで書き出し</button>
+      <button class="menu-btn" onclick="importData()" style="display:block; padding:8px 0;">記録を読み込み</button>
+      <button class="menu-btn" onclick="resetData()" style="display:block; padding:8px 0; color:var(--vermillion);">全データをリセット</button>
+    </div>
+  `;
+}
+
+// ===== シート（詳細） =====
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+
+function openSheet(id) {
+  currentId = id;
+  const f = FALLS.find(x => x.id === id);
+  const v = getVisit(id);
+  document.getElementById('sheet-num').textContent = `№${String(f.id).padStart(3,'0')}`;
+  document.getElementById('sheet-title').textContent = f.name;
+  document.getElementById('sheet-kana').textContent = f.kana;
+  document.getElementById('sheet-loc').textContent = `${f.pref}　${f.city}`;
+  document.getElementById('visit-toggle').classList.toggle('on', v.visited);
+  document.getElementById('visit-date').value = v.date || '';
+  document.getElementById('visit-memo').value = v.memo || '';
+  renderPhotos();
+  sheet.classList.add('open');
+  backdrop.classList.add('open');
+  map.closePopup();
+}
+window.openSheet = openSheet;
+
+function closeSheet() {
+  sheet.classList.remove('open');
+  backdrop.classList.remove('open');
+  currentId = null;
+}
+backdrop.addEventListener('click', closeSheet);
+
+// 訪問トグル
+document.getElementById('visit-toggle').addEventListener('click', () => {
+  const t = document.getElementById('visit-toggle');
+  t.classList.toggle('on');
+  if (t.classList.contains('on') && !document.getElementById('visit-date').value) {
+    document.getElementById('visit-date').value = new Date().toISOString().slice(0,10);
+  }
+});
+
+// 写真
+function renderPhotos() {
+  const v = getVisit(currentId);
+  const grid = document.getElementById('photos-grid');
+  let html = '';
+  (v.photos || []).forEach((p, i) => {
+    html += `<div class="photo-cell"><img src="${p}"><button class="photo-del" data-i="${i}">×</button></div>`;
+  });
+  html += `<div class="photo-add" id="photo-add-btn">＋</div>`;
+  grid.innerHTML = html;
+  grid.querySelectorAll('.photo-del').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const i = parseInt(btn.dataset.i);
+      v.photos.splice(i, 1);
+      visits[currentId] = v;
+      renderPhotos();
+    });
+  });
+  document.getElementById('photo-add-btn').addEventListener('click', () => {
+    document.getElementById('photo-input').click();
+  });
+}
+
+document.getElementById('photo-input').addEventListener('change', async (e) => {
+  const files = Array.from(e.target.files || []);
+  for (const file of files) {
+    const dataUrl = await compressImage(file, 800, 0.7);
+    const v = getVisit(currentId);
+    if (!v.photos) v.photos = [];
+    v.photos.push(dataUrl);
+    visits[currentId] = v;
+  }
+  renderPhotos();
+  e.target.value = '';
+});
+
+// 画像圧縮（容量節約）
+function compressImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width, h = img.height;
+        if (w > h && w > maxDim) { h = h * maxDim / w; w = maxDim; }
+        else if (h > maxDim) { w = w * maxDim / h; h = maxDim; }
+        const canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', quality));
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+// 保存
+document.getElementById('save-btn').addEventListener('click', async () => {
+  if (!currentId) return;
+  const btn = document.getElementById('save-btn');
+  btn.disabled = true;
+  btn.textContent = '保存中...';
+  const v = getVisit(currentId);
+  v.visited = document.getElementById('visit-toggle').classList.contains('on');
+  v.date = document.getElementById('visit-date').value;
+  v.memo = document.getElementById('visit-memo').value;
+  visits[currentId] = v;
+  const result = await saveVisit(currentId);
+  btn.disabled = false;
+  btn.textContent = '保 存';
+  if (!result.ok) {
+    alert('保存に失敗しました：' + result.error + '\n\n写真の容量が大きすぎる可能性があります。写真を減らすか、解像度を下げて再試行してください。');
+    return;
+  }
+  // マーカー更新
+  if (markers[currentId]) {
+    markers[currentId].setIcon(makeIcon(v.visited));
+  }
+  updateProgress();
+  closeSheet();
+  // 現在のビューを再描画
+  if (document.getElementById('view-list').classList.contains('active')) renderListItems();
+  if (document.getElementById('view-stats').classList.contains('active')) renderStats();
+});
+
+// ===== 進捗表示 =====
+function updateProgress() {
+  const visited = Object.values(visits).filter(v => v.visited).length;
+  document.getElementById('visited-count').textContent = visited;
+  document.getElementById('progress-fill').style.width = visited + '%';
+}
+
+// ===== データ管理 =====
+function exportData() {
+  const blob = new Blob([JSON.stringify(visits, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `falls_tracker_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+window.exportData = exportData;
+
+function importData() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'application/json';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    try {
+      const text = await file.text();
+      const data = JSON.parse(text);
+      if (typeof data !== 'object') throw new Error();
+      if (!confirm('現在の記録を上書きします。よろしいですか？')) return;
+      visits = data;
+      // 全て保存
+      for (const id of Object.keys(visits)) {
+        await saveVisit(parseInt(id));
+      }
+      renderMarkers();
+      updateProgress();
+      renderStats();
+      alert('読み込みました');
+    } catch(e) {
+      alert('読み込みに失敗しました');
+    }
+  };
+  input.click();
+}
+window.importData = importData;
+
+async function resetData() {
+  if (!confirm('全ての訪問記録と写真を削除します。本当によろしいですか？')) return;
+  if (!confirm('この操作は取り消せません。本当に削除しますか？')) return;
+  if (storageMode === 'idb') {
+    try { await idbClear(); } catch(e) {}
+  }
+  visits = {};
+  renderMarkers();
+  updateProgress();
+  renderStats();
+}
+window.resetData = resetData;
+
+// ストレージモード警告を表示
+function showStorageWarning() {
+  if (storageMode !== 'memory') return;
+  const banner = document.createElement('div');
+  banner.style.cssText = 'background:#fdf6e3; border-bottom:1px solid var(--vermillion); color:var(--ink); padding:8px 12px; font-size:11px; text-align:center; line-height:1.4;';
+  banner.innerHTML = '⚠ 永続保存が利用できないため、記録はこのセッションのみ保持されます。「記録」タブから書き出してバックアップしてください。';
+  document.querySelector('header').after(banner);
+}
+
+// ===== 初期化 =====
+(async () => {
+  await initStorage();
+  await loadData();
+  renderMarkers();
+  updateProgress();
+  showStorageWarning();
+})();
+</script>
+</body>
+</html>
